@@ -1,0 +1,52 @@
+/* Google Maps Modal Styles */
+#maps-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.4);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+}
+#maps-modal .maps-modal-content {
+  background: #fff;
+  padding: 0;
+  border-radius: 8px;
+  max-width: 90vw;
+  max-height: 80vh;
+  width: 600px;
+  height: 400px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+#close-maps-modal {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 1.5em;
+  cursor: pointer;
+}
+#maps-iframe {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+}
+#maps-link {
+  margin: 8px auto 12px;
+  color: #3c71fe;
+  text-align: center;
+  display: block;
+}
+
+/* Job location link style */
+.job-location {
+  color: #3c71fe !important;
+  cursor: pointer;
+} 

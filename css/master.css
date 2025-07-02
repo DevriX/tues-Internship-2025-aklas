@@ -1075,3 +1075,9 @@ ul {
 }
 
 /*# sourceMappingURL=master.css.map */
+
+/* text decoration */
+
+.job-location {
+  text-decoration: none;
+}
