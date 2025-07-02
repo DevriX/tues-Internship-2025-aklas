@@ -1,6 +1,6 @@
 <?php
 session_start();
-require 'dbconn.php'; // your DB connection file
+require 'dbconn.php'; 
 
 $errors = [];
 
@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errors)) {
-        // Check if user exists
+        
         $stmt = $connection->prepare("SELECT id, password FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
@@ -30,11 +30,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->fetch();
 
             if (password_verify($password, $hashed_password)) {
-                // Password correct, login user
+                
                 $_SESSION['user_id'] = $user_id;
                 $_SESSION['email'] = $email;
 
-                // Redirect to dashboard
+                
                 header('Location: index.html');
                 exit;
             } else {

@@ -35,9 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $company_name = sanitize($_POST['company_name'] ?? '');
     $company_site = sanitize($_POST['company_site'] ?? '');
     $description = sanitize($_POST['description'] ?? '');
-    $pesho = sanitize($_POST['pesho'] ?? '');
 
-    // Required fields
+    
     if (!$first_name) $errors[] = "First name is required.";
     if (!$last_name) $errors[] = "Last name is required.";
     if (!$email || !isValidEmail($email)) $errors[] = "Valid email is required.";
@@ -45,10 +44,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($password !== $repeat_password) $errors[] = "Passwords do not match.";
     if ($phone && !isValidPhoneBG($phone)) $errors[] = "Phone number is invalid. Use Bulgarian format.";
     if (!isValidURL($company_site)) $errors[] = "Company site URL is invalid.";
-    if (!$pesho) $errors[] = "Pesho field is required.";
 
     if (empty($errors)) {
-        // Check if email already exists
+        
         $stmt = $connection->prepare("SELECT id FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
@@ -66,11 +64,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $verified = 0;
 
             $stmt = $connection->prepare("INSERT INTO users 
-                (first_name, last_name, email, password, phone_number, is_admin, description, created_at, company_name, company_site, verified, verification_token, pesho) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?)");
+                (first_name, last_name, email, password, phone_number, is_admin, description, created_at, company_name, company_site, verified, verification_token) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?)");
 
             $stmt->bind_param(
-                "sssssisssiss",
+                "sssssisssis",
                 $first_name,
                 $last_name,
                 $email,
@@ -81,12 +79,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $company_name,
                 $company_site,
                 $verified,
-                $verification_token,
-                $pesho
+                $verification_token
             );
 
             if ($stmt->execute()) {
-                // Redirect immediately after success
                 header('Location: index.html');
                 exit;
             } else {
@@ -147,9 +143,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         </div>
                                         <div class="form-field-wrapper">
                                             <input type="tel" name="phone" placeholder="Phone Number" value="<?= htmlspecialchars($_POST['phone'] ?? '') ?>" />
-                                        </div>
-                                        <div class="form-field-wrapper">
-                                            <input type="text" name="pesho" placeholder="Pesho*" required value="<?= htmlspecialchars($_POST['pesho'] ?? '') ?>" />
                                         </div>
                                     </div>
                                     <div class="secondary-container">
