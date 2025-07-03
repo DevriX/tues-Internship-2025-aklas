@@ -4,7 +4,9 @@ require 'dbconn.php';
 $user_logged_in = false;
 $display_name = '';
 
+$is_logged_in = false;
 if (isset($_COOKIE['login_token'])) {
+	$is_logged_in = true;
     $token = $_COOKIE['login_token'];
     $token_hash = hash('sha256', $token);
 
@@ -31,6 +33,8 @@ if (isset($_COOKIE['login_token'])) {
 $current_page = basename($_SERVER['PHP_SELF']);
 if ($current_page !== 'register.php' && $current_page !== 'login.php'):
 ?>
+
+<?php if ($is_logged_in): ?>
 <nav class="footer-vertical-menu">
 	<button class="menu-toggle-arrow" aria-label="Toggle menu">
 		<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" stroke="#222" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -203,3 +207,4 @@ if ($current_page !== 'register.php' && $current_page !== 'login.php'):
 	</div>
 </body>
 </html>
+<?php endif; ?>
