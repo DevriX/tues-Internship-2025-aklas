@@ -117,6 +117,9 @@ if (isset($_COOKIE['login_token'])) {
 
 						if ($result && mysqli_num_rows($result) > 0) {
 							while ($job = mysqli_fetch_assoc($result)) {
+								if (empty($job['title']) || empty($job['location'])){
+									continue;
+								}
 								?>
 								<li class="job-card">
 									<div class="job-primary">
