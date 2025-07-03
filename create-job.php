@@ -1,13 +1,25 @@
 <?php
-session_start();
 require 'dbconn.php';
 
-if (!isset($_SESSION['user_id'])) {
+$user_id = null;
+if (isset($_COOKIE['login_token'])) {
+    $token = $_COOKIE['login_token'];
+    $token_hash = hash('sha256', $token);
+    $stmt = $connection->prepare("SELECT user_id FROM login_tokens WHERE token_hash = ? AND expiry > NOW() LIMIT 1");
+    $stmt->bind_param("s", $token_hash);
+    $stmt->execute();
+    $stmt->store_result();
+    if ($stmt->num_rows === 1) {
+        $stmt->bind_result($user_id);
+        $stmt->fetch();
+    }
+    $stmt->close();
+}
+
+if (!$user_id) {
     header('Location: login.php');
     exit;
 }
-
-$user_id = $_SESSION['user_id'];
 
 $job_title = $_POST['job-title'] ?? '';
 $location = $_POST['location'] ?? '';
