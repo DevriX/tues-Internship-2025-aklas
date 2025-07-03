@@ -6,12 +6,10 @@ function isValidEmail($email) {
 }
 
 function isValidPassword($password) {
-    // At least 8 chars, at least one uppercase, one lowercase, one special char
     return preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,}$/', $password);
 }
 
 function isValidPhoneBG($phone) {
-    // Bulgarian phone: +359 or 0 followed by 8-9 digits
     return preg_match('/^(\+359|0)\d{8,9}$/', $phone);
 }
 
@@ -36,7 +34,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $company_site = sanitize($_POST['company_site'] ?? '');
     $description = sanitize($_POST['description'] ?? '');
 
-    
     if (!$first_name) $errors[] = "First name is required.";
     if (!$last_name) $errors[] = "Last name is required.";
     if (!$email || !isValidEmail($email)) $errors[] = "Valid email is required.";
@@ -46,7 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!isValidURL($company_site)) $errors[] = "Company site URL is invalid.";
 
     if (empty($errors)) {
-        
         $stmt = $connection->prepare("SELECT id FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
@@ -83,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
 
             if ($stmt->execute()) {
-                header('Location: index.html');
+                header('Location: index.php');
                 exit;
             } else {
                 $errors[] = "Database error: Could not register user.";
@@ -97,75 +93,75 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8">
     <title>Register</title>
-    <link rel="stylesheet" href="./css/master.css" />
+    <link rel="stylesheet" href="./css/master.css">
 </head>
 <body>
-    <div class="site-wrapper">
-        <main class="site-main">
-            <section class="section-fullwidth">
-                <div class="row">
-                    <div class="flex-container centered-vertically centered-horizontally">
-                        <div class="form-box box-shadow">
-                            <div class="section-heading">
-                                <h2 class="heading-title">Register</h2>
-                            </div>
-
-                            <?php if (!empty($errors)): ?>
-                                <div style="color:red; margin-bottom:1em;">
-                                    <ul>
-                                        <?php foreach ($errors as $error): ?>
-                                            <li><?= htmlspecialchars($error) ?></li>
-                                        <?php endforeach; ?>
-                                    </ul>
-                                </div>
-                            <?php endif; ?>
-
-                            <form action="register.php" method="POST" novalidate>
-                                <div class="flex-container justified-horizontally">
-                                    <div class="primary-container">
-                                        <h4 class="form-title">About me</h4>
-                                        <div class="form-field-wrapper">
-                                            <input type="text" name="first_name" placeholder="First Name*" required value="<?= htmlspecialchars($_POST['first_name'] ?? '') ?>" />
-                                        </div>
-                                        <div class="form-field-wrapper">
-                                            <input type="text" name="last_name" placeholder="Last Name*" required value="<?= htmlspecialchars($_POST['last_name'] ?? '') ?>" />
-                                        </div>
-                                        <div class="form-field-wrapper">
-                                            <input type="email" name="email" placeholder="Email*" required value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" />
-                                        </div>
-                                        <div class="form-field-wrapper">
-                                            <input type="password" name="password" placeholder="Password*" required />
-                                        </div>
-                                        <div class="form-field-wrapper">
-                                            <input type="password" name="repeat_password" placeholder="Repeat Password*" required />
-                                        </div>
-                                        <div class="form-field-wrapper">
-                                            <input type="tel" name="phone" placeholder="Phone Number" value="<?= htmlspecialchars($_POST['phone'] ?? '') ?>" />
-                                        </div>
-                                    </div>
-                                    <div class="secondary-container">
-                                        <h4 class="form-title">My Company</h4>
-                                        <div class="form-field-wrapper">
-                                            <input type="text" name="company_name" placeholder="Company Name" value="<?= htmlspecialchars($_POST['company_name'] ?? '') ?>" />
-                                        </div>
-                                        <div class="form-field-wrapper">
-                                            <input type="url" name="company_site" placeholder="Company Site" value="<?= htmlspecialchars($_POST['company_site'] ?? '') ?>" />
-                                        </div>
-                                        <div class="form-field-wrapper">
-                                            <textarea name="description" placeholder="Description"><?= htmlspecialchars($_POST['description'] ?? '') ?></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                                <button class="button" type="submit">Register</button>
-                            </form>
-
+<div class="site-wrapper">
+    <main class="site-main">
+        <section class="section-fullwidth">
+            <div class="row">
+                <div class="flex-container centered-vertically centered-horizontally">
+                    <div class="form-box box-shadow">
+                        <div class="section-heading">
+                            <h2 class="heading-title">Register</h2>
                         </div>
+
+                        <?php if (!empty($errors)): ?>
+                            <div style="color:red; margin-bottom:1em;">
+                                <ul>
+                                    <?php foreach ($errors as $error): ?>
+                                        <li><?= htmlspecialchars($error) ?></li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
+                        <?php endif; ?>
+
+                        <form action="register.php" method="POST" novalidate>
+                            <div class="flex-container justified-horizontally">
+                                <div class="primary-container">
+                                    <h4 class="form-title">About me</h4>
+                                    <div class="form-field-wrapper">
+                                        <input type="text" name="first_name" placeholder="First Name*" required value="<?= htmlspecialchars($_POST['first_name'] ?? '') ?>">
+                                    </div>
+                                    <div class="form-field-wrapper">
+                                        <input type="text" name="last_name" placeholder="Last Name*" required value="<?= htmlspecialchars($_POST['last_name'] ?? '') ?>">
+                                    </div>
+                                    <div class="form-field-wrapper">
+                                        <input type="email" name="email" placeholder="Email*" required value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
+                                    </div>
+                                    <div class="form-field-wrapper">
+                                        <input type="password" name="password" placeholder="Password*" required>
+                                    </div>
+                                    <div class="form-field-wrapper">
+                                        <input type="password" name="repeat_password" placeholder="Repeat Password*" required>
+                                    </div>
+                                    <div class="form-field-wrapper">
+                                        <input type="tel" name="phone" placeholder="Phone Number" value="<?= htmlspecialchars($_POST['phone'] ?? '') ?>">
+                                    </div>
+                                </div>
+                                <div class="secondary-container">
+                                    <h4 class="form-title">My Company</h4>
+                                    <div class="form-field-wrapper">
+                                        <input type="text" name="company_name" placeholder="Company Name" value="<?= htmlspecialchars($_POST['company_name'] ?? '') ?>">
+                                    </div>
+                                    <div class="form-field-wrapper">
+                                        <input type="url" name="company_site" placeholder="Company Site" value="<?= htmlspecialchars($_POST['company_site'] ?? '') ?>">
+                                    </div>
+                                    <div class="form-field-wrapper">
+                                        <textarea name="description" placeholder="Description"><?= htmlspecialchars($_POST['description'] ?? '') ?></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="button" type="submit">Register</button>
+                        </form>
+
                     </div>
                 </div>
-            </section>
-        </main>
-    </div>
+            </div>
+        </section>
+    </main>
+</div>
 </body>
 </html>
