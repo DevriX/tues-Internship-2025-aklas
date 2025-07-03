@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (applyBtn) {
         applyBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            window.location.href = 'apply-submission.html';
+            window.location.href = 'apply-submission.php';
         });
     }
 

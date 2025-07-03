@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             const jobName = link.textContent.trim();
-            window.location.href = `single.html?job=${encodeURIComponent(jobName)}`;
+            window.location.href = `single.php?job=${encodeURIComponent(jobName)}`;
         });
     });
 
@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (applyBtn) {
         applyBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            window.location.href = 'apply-submission.html';
+            window.location.href = 'apply-submission.php';
         });
     }
 
@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // On single.html: Show job name from query string
-    if (window.location.pathname.endsWith('single.html')) {
+    if (window.location.pathname.endsWith('single.php')) {
         const params = new URLSearchParams(window.location.search);
         const jobName = params.get('job');
         if (jobName) {
@@ -131,6 +131,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     card.style.display = 'none';
                 }
             });
+        });
+    }
+
+    // Collapsible vertical menu toggle
+    var menu = document.querySelector('.footer-vertical-menu');
+    var toggleBtn = document.querySelector('.footer-vertical-menu .menu-toggle-arrow');
+    if (menu && toggleBtn) {
+        toggleBtn.addEventListener('click', function() {
+            menu.classList.toggle('collapsed');
         });
     }
 });

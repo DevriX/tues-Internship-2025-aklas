@@ -1081,3 +1081,92 @@ ul {
 .job-location {
   text-decoration: none;
 }
+
+/* Improved collapsible vertical menu styles */
+.footer-vertical-menu {
+  position: fixed;
+  top: 120px;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  background: rgba(255,255,255,0.97);
+  border-radius: 16px 0 0 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+  padding: 18px 12px 18px 18px;
+  z-index: 1000;
+  min-width: 160px;
+  gap: 10px;
+  transition: right 0.3s cubic-bezier(.4,0,.2,1), min-width 0.3s cubic-bezier(.4,0,.2,1), padding 0.3s, box-shadow 0.3s, top 0.3s;
+}
+.footer-vertical-menu.collapsed {
+  right: 0;
+  min-width: 44px;
+  width: 44px;
+  padding: 8px 0 8px 0;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+  border-radius: 16px 0 0 16px;
+  overflow: visible;
+  align-items: flex-start;
+}
+.footer-vertical-menu .menu-toggle-arrow {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 0 8px 8px 0;
+  cursor: pointer;
+  align-self: flex-start;
+  margin-bottom: 10px;
+  padding: 4px 6px;
+  transition: transform 0.3s, box-shadow 0.3s;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  position: relative;
+  z-index: 1100;
+}
+.footer-vertical-menu .menu-toggle-arrow svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+  transition: transform 0.3s;
+}
+.footer-vertical-menu.collapsed .menu-toggle-arrow svg {
+  transform: rotate(180deg);
+}
+.footer-vertical-menu.collapsed .footer-vlink {
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  transition: opacity 0.2s, width 0.2s, padding 0.2s, margin 0.2s;
+}
+.footer-vertical-menu .footer-vlink {
+  transition: opacity 0.2s, width 0.2s, padding 0.2s, margin 0.2s;
+}
+.footer-vlink {
+  color: #222;
+  text-decoration: none;
+  font-size: 1.08rem;
+  font-weight: 500;
+  padding: 8px 0 8px 8px;
+  border-radius: 8px 0 0 8px;
+  border-left: 4px solid transparent;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+  margin-right: 0;
+}
+.footer-vlink:hover {
+  background: #f0f4ff;
+  color: #007bff;
+  border-left: 4px solid #007bff;
+}
+.footer-vlink.active {
+  color: #007bff;
+  background: #eaf2ff;
+  border-left: 4px solid #007bff;
+  text-decoration: underline;
+}
+@media (max-width: 700px) {
+  .footer-vertical-menu {
+    display: none;
+  }
+}

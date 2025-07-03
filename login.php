@@ -114,25 +114,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             </section>
         </main>
-
-        <footer class="site-footer">
-            <div class="row">
-                <p>
-                    Copyright 2020 |
-                    <a href="index.php">Home</a>,
-                    <a href="dashboard.html">Jobs Dashboard</a>,
-                    <a href="single.html">Single</a>,
-                    <a href="login.php">Login</a>,
-                    <a href="register.php">Register</a>,
-                    <a href="submissions.html">Submissions</a>,
-                    <a href="apply-submission.html">Apply Submission</a>,
-                    <a href="view-submission.html">View Submission</a>,
-                    <a href="create-job.php">Create-Edit Job</a>,
-                    <a href="category-dashboard.html">Category Dashboard</a>,
-                    <a href="profile.html">My Profile</a>
-                </p>
-            </div>
-        </footer>
     </div>
 </body>
 </html>
