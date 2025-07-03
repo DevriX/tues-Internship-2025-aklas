@@ -111,43 +111,46 @@ if (isset($_COOKIE['login_token'])) {
 					</div>
 
 					<ul class="jobs-listing">
-						<?php
-						$sql = "SELECT * FROM jobs ORDER BY id DESC";
-						$result = mysqli_query($connection, $sql);
+							<?php
+							$sql = "SELECT jobs.*, users.company_name
+									FROM jobs
+									LEFT JOIN users ON jobs.user_id = users.id
+									ORDER BY jobs.id DESC";
+							$result = mysqli_query($connection, $sql);
 
-						if ($result && mysqli_num_rows($result) > 0) {
-							while ($job = mysqli_fetch_assoc($result)) {
-								if (empty($job['title']) || empty($job['location'])){
-									continue;
+							if ($result && mysqli_num_rows($result) > 0) {
+								while ($job = mysqli_fetch_assoc($result)) {
+									if(empty($job['title']) || empty($job['location'])){
+										continue;
+									}
+									?>
+									<li class="job-card">
+										<div class="job-primary">
+											<h2 class="job-title"><a href="#"><?php echo htmlspecialchars($job['title']); ?></a></h2>
+											<div class="job-meta">
+												<span class="meta-company"><?php echo htmlspecialchars($job['company_name'] ?? 'Unknown Company'); ?></span>
+												<span class="meta-date">Posted <?php echo htmlspecialchars($job['created_at']); ?></span>
+											</div>
+											<div class="job-details">
+												<span class="job-location"><?php echo htmlspecialchars($job['location']); ?></span>
+												<span class="job-type">Salary: <?php echo htmlspecialchars($job['salary']); ?></span>
+											</div>
+											<div class="job-description">
+												<?php echo nl2br(htmlspecialchars($job['description'])); ?>
+											</div>
+										</div>
+										<div class="job-logo">
+											<div class="job-logo-box">
+												<img src="https://i.imgur.com/ZbILm3F.png" alt="">
+											</div>
+										</div>
+									</li>
+									<?php
 								}
-								?>
-								<li class="job-card">
-									<div class="job-primary">
-										<h2 class="job-title"><a href="#"><?php echo htmlspecialchars($job['title']); ?></a></h2>
-										<div class="job-meta">
-											<span class="meta-company">Company ID: <?php echo htmlspecialchars($job['company_id']); ?></span>
-											<span class="meta-date">Posted <?php echo htmlspecialchars($job['created_at']); ?></span>
-										</div>
-										<div class="job-details">
-											<span class="job-location"><?php echo htmlspecialchars($job['location']); ?></span>
-											<span class="job-type">Salary: <?php echo htmlspecialchars($job['salary']); ?></span>
-										</div>
-										<div class="job-description">
-											<?php echo nl2br(htmlspecialchars($job['description'])); ?>
-										</div>
-									</div>
-									<div class="job-logo">
-										<div class="job-logo-box">
-											<img src="https://i.imgur.com/ZbILm3F.png" alt="">
-										</div>
-									</div>
-								</li>
-								<?php
+							} else {
+								echo "<li>No jobs found.</li>";
 							}
-						} else {
-							echo "<li>No jobs found.</li>";
-						}
-						?>
+							?>
 					</ul>
 
 					<div class="jobs-pagination-wrapper">
