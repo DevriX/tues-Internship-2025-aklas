@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
 
             if ($stmt->execute()) {
-                header('Location: index.php');
+                header('Location: login.php');
                 exit;
             } else {
                 $errors[] = "Database error: Could not register user.";
