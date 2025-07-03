@@ -43,16 +43,16 @@ mysqli_query($connection, $sql);
 				<nav class="site-header-navigation">
 					<ul class="menu">
 						<li class="menu-item">
-							<a href="/index.html">Home</a>					
+							<a href="/tues-Internship-2025-aklas/index.html">Home</a>					
 						</li>
 						<li class="menu-item current-menu-item">
-							<a href="/dashboard.html">Dashboard</a>
+							<a href="/tues-Internship-2025-aklas/dashboard.html">Jobs Dashboard</a>
 						</li>
 						<li class="menu-item">
-							<a href="/profile.html">My Profile</a>					
+							<a href="/tues-Internship-2025-aklas/profile.html">My Profile</a>				
 						</li>
 						<li class="menu-item">
-							<a href="/login.html">Sign Out</a>					
+							<a href="/tues-Internship-2025-aklas/login.php">SignOut</a>	
 						</li>
 					</ul>
 				</nav>
@@ -98,17 +98,17 @@ mysqli_query($connection, $sql);
 		<footer class="site-footer">
 			<div class="row">
 				<p>Copyright 2020 | Developer links: 
-					<a href="/index.html">Home</a>,
-					<a href="/dashboard.html">Jobs Dashboard</a>,
-					<a href="/single.html">Single</a>,
-					<a href="/login.html">Login</a>,
-					<a href="/register.html">Register</a>,
-					<a href="/submissions.html">Submissions</a>,
-					<a href="/apply-submission.html">Apply Submission</a>,
-					<a href="/view-submission.html">View Submission</a>,
-					<a href="/actions-job.html">Create-Edit Job</a>,
-					<a href="/category-dashboard.html">Category Dashboard</a>,
-					<a href="/profile.html">My Profile</a>
+					<a href="/tues-Internship-2025-aklas/index.html">Home</a>,
+					<a href="/tues-Internship-2025-aklas/dashboard.html">Jobs Dashboard</a>,
+					<a href="/tues-Internship-2025-aklas/single.html">Single</a>,
+					<a href="/tues-Internship-2025-aklas/login.php">Login</a>,
+					<a href="/tues-Internship-2025-aklas/register.php">Register</a>,
+					<a href="/tues-Internship-2025-aklas/submissions.html">Submissions</a>,
+					<a href="/tues-Internship-2025-aklas/apply-submission.html">Apply Submission</a>,
+					<a href="/tues-Internship-2025-aklas/view-submission.html">View Submission</a>,
+					<a href="/tues-Internship-2025-aklas/create-job.php">Create-Edit Job</a>,
+					<a href="/tues-Internship-2025-aklas/category-dashboard.html">Category Dashboard</a>,
+					<a href="/tues-Internship-2025-aklas/profile.html">My Profile</a>
 				</p>
 			</div>
 		</footer>
