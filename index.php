@@ -111,26 +111,40 @@ if (isset($_COOKIE['login_token'])) {
 					</div>
 
 					<ul class="jobs-listing">
-						<?php for ($i = 0; $i < 5; $i++): ?>
-							<li class="job-card">
-								<div class="job-primary">
-									<h2 class="job-title"><a href="#">Front End Developer</a></h2>
-									<div class="job-meta">
-										<a class="meta-company" href="#">Company Awesome Ltd.</a>
-										<span class="meta-date">Posted 14 days ago</span>
+						<?php
+						$sql = "SELECT * FROM jobs ORDER BY id DESC";
+						$result = mysqli_query($connection, $sql);
+
+						if ($result && mysqli_num_rows($result) > 0) {
+							while ($job = mysqli_fetch_assoc($result)) {
+								?>
+								<li class="job-card">
+									<div class="job-primary">
+										<h2 class="job-title"><a href="#"><?php echo htmlspecialchars($job['title']); ?></a></h2>
+										<div class="job-meta">
+											<span class="meta-company">Company ID: <?php echo htmlspecialchars($job['company_id']); ?></span>
+											<span class="meta-date">Posted <?php echo htmlspecialchars($job['created_at']); ?></span>
+										</div>
+										<div class="job-details">
+											<span class="job-location"><?php echo htmlspecialchars($job['location']); ?></span>
+											<span class="job-type">Salary: <?php echo htmlspecialchars($job['salary']); ?></span>
+										</div>
+										<div class="job-description">
+											<?php echo nl2br(htmlspecialchars($job['description'])); ?>
+										</div>
 									</div>
-									<div class="job-details">
-										<span class="job-location">The Hague (The Netherlands)</span>
-										<span class="job-type">Contract staff</span>
+									<div class="job-logo">
+										<div class="job-logo-box">
+											<img src="https://i.imgur.com/ZbILm3F.png" alt="">
+										</div>
 									</div>
-								</div>
-								<div class="job-logo">
-									<div class="job-logo-box">
-										<img src="https://i.imgur.com/ZbILm3F.png" alt="">
-									</div>
-								</div>
-							</li>
-						<?php endfor; ?>
+								</li>
+								<?php
+							}
+						} else {
+							echo "<li>No jobs found.</li>";
+						}
+						?>
 					</ul>
 
 					<div class="jobs-pagination-wrapper">
