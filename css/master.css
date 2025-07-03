@@ -1165,6 +1165,15 @@ ul {
   border-left: 4px solid #007bff;
   text-decoration: underline;
 }
+.footer-vlink[href*='logout.php'], .footer-vlink[href*='register.php'] {
+  color: #007bff !important;
+  font-weight: 600;
+}
+.footer-vlink[href*='logout.php']:hover, .footer-vlink[href*='register.php']:hover {
+  text-decoration: underline;
+  background: #eaf2ff;
+  border-left: 4px solid #007bff;
+}
 @media (max-width: 700px) {
   .footer-vertical-menu {
     display: none;
