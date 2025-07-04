@@ -2,7 +2,7 @@
 require 'dbconn.php';
 
 $user_logged_in = false;
-$display_name = '';
+$user_id = null;
 
 $update_success = false;
 
@@ -27,15 +27,38 @@ if (isset($_COOKIE['login_token'])) {
         $stmt->bind_result($user_id, $first_name, $last_name, $email, $phone, $description, $company_name, $company_site);
         $stmt->fetch();
         $user_logged_in = true;
-        $display_name = $first_name;
     }
 
     $stmt->close();
 }
 
-$current_page = basename($_SERVER['PHP_SELF']);
-include 'header.php';
-include 'vertical-navbar.php';
+// Handle profile update
+if ($_SERVER["REQUEST_METHOD"] === "POST" && $user_logged_in) {
+    $first_name = trim($_POST['first_name'] ?? '');
+    $last_name = trim($_POST['last_name'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $phone = trim($_POST['phone'] ?? '');
+    $description = trim($_POST['description'] ?? '');
+    $company_name = trim($_POST['company_name'] ?? '');
+    $company_site = trim($_POST['company_site'] ?? '');
+
+    $update = $connection->prepare("
+        UPDATE users SET 
+            first_name = ?, 
+            last_name = ?, 
+            email = ?, 
+            phone_number = ?, 
+            description = ?, 
+            company_name = ?, 
+            company_site = ?
+        WHERE id = ?
+    ");
+    $update->bind_param("sssssssi", $first_name, $last_name, $email, $phone, $description, $company_name, $company_site, $user_id);
+    $update->execute();
+    $update->close();
+
+    $update_success = true;
+}
 ?>
 
 <?php if ($user_logged_in): ?>
@@ -69,7 +92,23 @@ include 'vertical-navbar.php';
     </style>
 </head>
 <body>
-	<div class="site-wrapper">
+
+<div class="site-wrapper">
+    <header class="site-header">
+        <div class="row site-header-inner">
+            <div class="site-header-branding">
+                <h1 class="site-title"><a href="/tues-Internship-2025-aklas/index.php">Job Offers</a></h1>
+            </div>
+            <nav class="site-header-navigation">
+                <ul class="menu">
+                    <li class="menu-item"><a href="/tues-Internship-2025-aklas/index.php">Home</a></li>
+                    <li class="menu-item"><a href="/tues-Internship-2025-aklas/dashboard.php">Dashboard</a></li>
+                    <li class="menu-item current-menu-item"><a href="/tues-Internship-2025-aklas/profile.php">My Profile</a></li>
+                    <li class="menu-item"><a href="/tues-Internship-2025-aklas/logout.php">Sign Out</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
 
     <main class="site-main">
         <section class="section-fullwidth">
@@ -140,4 +179,3 @@ include 'vertical-navbar.php';
 <?php else: ?>
     <p>You are not logged in. <a href="login.php">Login here</a></p>
 <?php endif; ?>
-	
