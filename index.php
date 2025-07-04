@@ -99,7 +99,11 @@ include 'vertical-navbar.php';
 									?>
 									<li class="job-card">
 										<div class="job-primary">
-											<h2 class="job-title"><a href="#"><?php echo htmlspecialchars($job['title']); ?></a></h2>
+											<h2 class="job-title">
+												<a href="single.php?id=<?php echo $job['id']; ?>">
+													<?php echo htmlspecialchars($job['title']); ?>
+												</a>
+											</h2>
 											<div class="job-meta">
 												<span class="meta-company"><?php echo htmlspecialchars($job['company_name'] ?? 'Unknown Company'); ?></span>
 												<span class="meta-date">Posted <?php echo htmlspecialchars($job['created_at']); ?></span>

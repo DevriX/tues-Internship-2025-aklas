@@ -1,11 +1,14 @@
 <?php
 require 'dbconn.php';
+
 $user_logged_in = false;
 $display_name = '';
 $current_page = basename($_SERVER['PHP_SELF']);
+
 if (isset($_COOKIE['login_token'])) {
     $token = $_COOKIE['login_token'];
     $token_hash = hash('sha256', $token);
+
     $stmt = $connection->prepare("
         SELECT u.first_name
         FROM login_tokens lt 
@@ -23,9 +26,33 @@ if (isset($_COOKIE['login_token'])) {
     }
     $stmt->close();
 }
+
 include 'header.php';
 include 'auth-user.php';
 include 'vertical-navbar.php';
+
+// Get job ID from query parameter
+$job_id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+echo "$job_id";
+$job = null;
+
+if ($job_id > 0) {
+    $stmt = $connection->prepare("
+        SELECT jobs.*, users.company_name 
+        FROM jobs 
+        LEFT JOIN users ON jobs.user_id = users.id 
+        WHERE jobs.id = ?
+    ");
+    $stmt->bind_param("i", $job_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+	echo "hello";
+    if ($result->num_rows === 1) {
+		echo "Hello";
+        $job = $result->fetch_assoc();
+    }
+    $stmt->close();
+}
 ?>
 
 <!DOCTYPE html>
@@ -34,43 +61,36 @@ include 'vertical-navbar.php';
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Jobs</title>
-	<link rel="preconnect" href="https://fonts.gstatic.com">
-
+	<title>Job Details</title>
 	<link rel="stylesheet" href="./css/master.css">
 	<link rel="stylesheet" href="./css/maps.css">
 	<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
 	<div class="site-wrapper">
-
 		<main class="site-main">
 			<section class="section-fullwidth">
 				<div class="row">
+					<?php if ($job): ?>
 					<div class="job-single">
 						<div class="job-main">
 							<div class="job-card">
 								<div class="job-primary">
 									<header class="job-header">
-										<h2 class="job-title"><a href="#">Front End Developer</a></h2>
+										<h2 class="job-title"><?php echo htmlspecialchars($job['title']); ?></h2>
 										<div class="job-meta">
-											<a class="meta-company" href="#">Company Awesome Ltd.</a>
-											<span class="meta-date">Posted 14 days ago</span>
+											<span class="meta-company"><?php echo htmlspecialchars($job['company_name'] ?? 'Unknown Company'); ?></span>
+											<span class="meta-date">Posted on <?php echo htmlspecialchars($job['created_at']); ?></span>
 										</div>
 										<div class="job-details">
-											<span class="job-location">The Hague (The Netherlands)</span>
-											<span class="job-type">Contract staff</span>
-											<span class="job-price">1500лв.</span>
+											<span class="job-location"><?php echo htmlspecialchars($job['location']); ?></span>
+											<span class="job-type">Job ID: <?php echo htmlspecialchars($job['id']); ?></span>
+											<span class="job-price"><?php echo htmlspecialchars($job['salary']); ?> лв.</span>
 										</div>
 									</header>
 
 									<div class="job-body">
-										<p>Our band of superheroes are looking for a self-driven, highly organised individual who will join the team in creating our most important products.</p>
-										<p>Location is unimportant, as long as you are available, enthusiastic, committed, passionate, and know your stuff.</p>
-										<p>For this role, we need a superhero who will take on the challenges of working in one of the leading WordPress companies, enhancing our website, products, and services, backed by a quality team of pros.</p>
-
-										<h3>Responsibilities</h3>
-										<p>You'll be part of a development team working on our flagship products. It's going to be epic!</p>
+										<p><?php echo nl2br(htmlspecialchars($job['description'])); ?></p>
 									</div>
 								</div>
 							</div>
@@ -78,61 +98,21 @@ include 'vertical-navbar.php';
 						<aside class="job-secondary">
 							<div class="job-logo">
 								<div class="job-logo-box">
-									<img src="https://i.imgur.com/ZbILm3F.png" alt="">
+									<img src="https://i.imgur.com/ZbILm3F.png" alt="Company Logo">
 								</div>
 							</div>
 							<a href="#" class="button button-wide">Apply now</a>
-							<a href="https://www.apple.com/" target="_blank">apple.com</a>
+							<a href="https://www.example.com/" target="_blank">example.com</a>
 						</aside>
 					</div>
-				</div>
-			</section>
-			<section class="section-fullwidth">
-				<div class="row">
-					<h2 class="section-heading">Other related jobs:</h2>
-					<ul class="jobs-listing">
-						<li class="job-card">
-							<div class="job-primary">
-								<h2 class="job-title"><a href="#">Front End Developer</a></h2>
-								<div class="job-meta">
-									<a class="meta-company" href="#">Company Awesome Ltd.</a>
-									<span class="meta-date">Posted 14 days ago</span>
-								</div>
-								<div class="job-details">
-									<span class="job-location">The Hague (The Netherlands)</span>
-									<span class="job-type">Contract staff</span>
-								</div>
-							</div>
-							<div class="job-logo">
-								<div class="job-logo-box">
-									<img src="https://i.imgur.com/ZbILm3F.png" alt="">
-								</div>
-							</div>
-						</li>
-
-						<li class="job-card">
-							<div class="job-primary">
-								<h2 class="job-title"><a href="#">Front End Developer</a></h2>
-								<div class="job-meta">
-									<a class="meta-company" href="#">Company Awesome Ltd.</a>
-									<span class="meta-date">Posted 14 days ago</span>
-								</div>
-								<div class="job-details">
-									<span class="job-location">The Hague (The Netherlands)</span>
-									<span class="job-type">Contract staff</span>
-								</div>
-							</div>
-							<div class="job-logo">
-								<div class="job-logo-box">
-									<img src="https://i.imgur.com/ZbILm3F.png" alt="">
-								</div>
-							</div>
-						</li>
-					</ul>
+					<?php else: ?>
+						<p>Job not found.</p>
+					<?php endif; ?>
 				</div>
 			</section>
 		</main>
 	</div>
+
 	<script src="single.js"></script>
 
 	<!-- Google Maps Modal -->
@@ -144,4 +124,4 @@ include 'vertical-navbar.php';
 		</div>
 	</div>
 </body>
-</html> 
+</html>
