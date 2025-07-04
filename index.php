@@ -90,18 +90,18 @@ include 'vertical-navbar.php';
 									WHERE jobs.approved = 1
 									ORDER BY jobs.id DESC";
 							$result = mysqli_query($connection, $sql);
-
 							if ($result && mysqli_num_rows($result) > 0) {
 								while ($job = mysqli_fetch_assoc($result)) {
 									if(empty($job['title']) || empty($job['location'])){
 										continue;
 									}
+								
 									?>
 									<li class="job-card">
 										<div class="job-primary">
 											<h2 class="job-title">
 												<a href="single.php?id=<?php echo $job['id']; ?>">
-													<?php echo htmlspecialchars($job['title']); ?>
+													<?php echo htmlspecialchars( $job['title'] ); ?>
 												</a>
 											</h2>
 											<div class="job-meta">

@@ -1,13 +1,12 @@
 // For job name click on index.html
 document.addEventListener('DOMContentLoaded', function() {
     // Job name click: go to single.html with job name in query string
-    document.querySelectorAll('.job-title a').forEach(function(link) {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const jobName = link.textContent.trim();
-            window.location.href = `single.php?job=${encodeURIComponent(jobName)}`;
-        });
-    });
+    // document.querySelectorAll('.job-title a').forEach(function(link) {
+    //     link.addEventListener('click', function(e) {
+    //         e.preventDefault();
+    //         const jobName = link.textContent.trim();
+    //     });
+    // });
 
     // "Apply now" button click (works on any page)
     const applyBtn = document.querySelector('.button.button-wide');

@@ -33,7 +33,6 @@ include 'vertical-navbar.php';
 
 // Get job ID from query parameter
 $job_id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
-echo "$job_id";
 $job = null;
 
 if ($job_id > 0) {
@@ -46,13 +45,12 @@ if ($job_id > 0) {
     $stmt->bind_param("i", $job_id);
     $stmt->execute();
     $result = $stmt->get_result();
-	echo "hello";
     if ($result->num_rows === 1) {
-		echo "Hello";
         $job = $result->fetch_assoc();
     }
     $stmt->close();
 }
+
 ?>
 
 <!DOCTYPE html>
