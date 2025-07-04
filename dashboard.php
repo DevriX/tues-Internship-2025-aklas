@@ -102,6 +102,9 @@ include 'vertical-navbar.php';
 // Fetch all jobs for dashboard
 $jobs_result = mysqli_query($connection, "SELECT * FROM jobs");
 while ($job = mysqli_fetch_assoc($jobs_result)):
+    if (empty($job['title']) || empty($job['location']) || empty($job['salary'])) {
+        continue;
+    }
 ?>
 						<li class="job-card">
 							<div class="job-primary">
