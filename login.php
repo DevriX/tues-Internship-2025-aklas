@@ -1,4 +1,5 @@
 <?php
+session_start();
 require 'dbconn.php';
 
 $errors = [];
@@ -41,6 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Set token cookie
                 setcookie('login_token', $token, time() + (86400 * 7), "/", "", true, true); // Secure, HTTP-only
 
+                $_SESSION['user_id'] = $user_id;
                 header('Location: index.php');
                 exit;
             } else {
