@@ -144,17 +144,33 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Burger menu open/close logic for vertical navbar
+// Toggle vertical navbar from burger menu
 window.addEventListener('DOMContentLoaded', function() {
-    const menuToggleBtn = document.getElementById('menu-toggle-btn');
-    const verticalNavbar = document.getElementById('vertical-navbar');
-    const closeNavbarBtn = document.getElementById('close-vertical-navbar');
-    if (menuToggleBtn && verticalNavbar && closeNavbarBtn) {
-        menuToggleBtn.addEventListener('click', function() {
-            verticalNavbar.classList.add('open');
-        });
-        closeNavbarBtn.addEventListener('click', function() {
-            verticalNavbar.classList.remove('open');
-        });
+  var menuBtn = document.getElementById('menu-toggle-btn');
+  var verticalNavbar = document.getElementById('vertical-navbar');
+  var closeBtn = document.getElementById('close-vertical-navbar');
+
+  if (menuBtn && verticalNavbar) {
+    menuBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      verticalNavbar.classList.add('open');
+    });
+  }
+  if (closeBtn && verticalNavbar) {
+    closeBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      verticalNavbar.classList.remove('open');
+    });
+  }
+  // Optional: clicking outside closes the navbar
+  document.addEventListener('click', function(event) {
+    if (
+      verticalNavbar &&
+      verticalNavbar.classList.contains('open') &&
+      !verticalNavbar.contains(event.target) &&
+      event.target !== menuBtn
+    ) {
+      verticalNavbar.classList.remove('open');
     }
+  });
 });

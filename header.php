@@ -8,15 +8,15 @@
         </div>
         <nav class="site-header-navigation">
             <ul class="menu">
-                <li class="menu-item<?php if($current_page == 'index.php') echo ' current-menu-item'; ?>">
-                    <a href="/tues-Internship-2025-aklas/index.php">Home</a>
-                </li>
                 <?php if (isset($user_logged_in) && $user_logged_in): ?>
                     <li class="menu-item">
-                        <span style="color: black; margin-right: 10px;">Hi, <?= htmlspecialchars($display_name) ?></span>
+                        <a style="color: black; margin-right: 10px;">Hi, <?= htmlspecialchars($display_name) ?></a>
                     </li>
-                    <li class="menu-item">
-                        <a href="/tues-Internship-2025-aklas/logout.php">Logout</a>
+                    <li style="color: black; margin-right: -100px;" class="menu-item">
+                            <!-- Three dots (vertical ellipsis) button -->
+                            <button id="menu-toggle-btn" class="menu-toggle-btn" aria-label="Open menu">
+                                <svg width="28" height="28" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+                            </button>
                     </li>
                 <?php else: ?>
                     <li class="menu-item">
@@ -29,4 +29,4 @@
             </ul>
         </nav>
     </div>
-</header> 
+</header>

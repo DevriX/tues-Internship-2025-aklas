@@ -1188,3 +1188,38 @@ ul {
   z-index: 2001;
   position: fixed;
 }
+
+/* --- Burger menu button styles --- */
+.menu-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 30%;
+  border: 2px solid #222;
+  background: #fff;
+  cursor: pointer;
+  transition: box-shadow 0.2s, border-color 0.2s, background 0.2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  padding: 0;
+  margin-left: 10px;
+}
+.menu-toggle-btn:hover,
+.menu-toggle-btn:focus {
+  border-color: #3c71fe;
+  background: #f0f4ff;
+  box-shadow: 0 4px 16px rgba(60,113,254,0.10);
+}
+.menu-toggle-btn svg {
+  display: block;
+  fill: #222;
+}
+
+/* --- Vertical navbar overlay show/hide --- */
+#vertical-navbar {
+  display: none;
+}
+#vertical-navbar.open {
+  display: block;
+}
