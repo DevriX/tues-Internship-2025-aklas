@@ -1,5 +1,28 @@
 <?php
 require 'dbconn.php';
+$user_logged_in = false;
+$display_name = '';
+$current_page = basename($_SERVER['PHP_SELF']);
+if (isset($_COOKIE['login_token'])) {
+    $token = $_COOKIE['login_token'];
+    $token_hash = hash('sha256', $token);
+    $stmt = $connection->prepare("
+        SELECT u.first_name
+        FROM login_tokens lt 
+        JOIN users u ON lt.user_id = u.id 
+        WHERE lt.token_hash = ? AND lt.expiry > NOW()
+    ");
+    $stmt->bind_param("s", $token_hash);
+    $stmt->execute();
+    $stmt->store_result();
+    if ($stmt->num_rows === 1) {
+        $stmt->bind_result($first_name);
+        $stmt->fetch();
+        $user_logged_in = true;
+        $display_name = $first_name;
+    }
+    $stmt->close();
+}
 
 function isValidEmail($email) {
     return filter_var($email, FILTER_VALIDATE_EMAIL);
@@ -89,9 +112,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$current_page = basename($_SERVER['PHP_SELF']);
-if ($current_page !== 'register.php' && $current_page !== 'login.php'):
+include 'header.php';
+include 'vertical-navbar.php';
 ?>
+
 <nav class="footer-vertical-menu">
     <button class="menu-toggle-arrow" aria-label="Toggle menu">
 		<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" stroke="#222" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -106,7 +130,6 @@ if ($current_page !== 'register.php' && $current_page !== 'login.php'):
     <a href="/tues-Internship-2025-aklas/logout.php" class="footer-vlink<?php if($current_page == 'logout.php') echo ' active'; ?>">Logout</a>
 	<a href="/tues-Internship-2025-aklas/register.php" class="footer-vlink<?php if($current_page == 'register.php') echo ' active'; ?>">Register</a>
 </nav>
-<?php endif; ?> 
 
 <!DOCTYPE html>
 <html lang="en">

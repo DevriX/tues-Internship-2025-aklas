@@ -1179,3 +1179,12 @@ ul {
     display: none;
   }
 }
+
+.site-header {
+  z-index: 1000;
+  position: relative;
+}
+.vertical-navbar {
+  z-index: 2001;
+  position: fixed;
+}

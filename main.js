@@ -143,3 +143,18 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Burger menu open/close logic for vertical navbar
+window.addEventListener('DOMContentLoaded', function() {
+    const menuToggleBtn = document.getElementById('menu-toggle-btn');
+    const verticalNavbar = document.getElementById('vertical-navbar');
+    const closeNavbarBtn = document.getElementById('close-vertical-navbar');
+    if (menuToggleBtn && verticalNavbar && closeNavbarBtn) {
+        menuToggleBtn.addEventListener('click', function() {
+            verticalNavbar.classList.add('open');
+        });
+        closeNavbarBtn.addEventListener('click', function() {
+            verticalNavbar.classList.remove('open');
+        });
+    }
+});
