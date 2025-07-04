@@ -3,6 +3,7 @@
 require 'dbconn.php';
 $user_logged_in = false;
 $display_name = '';
+$current_page = basename($_SERVER['PHP_SELF']);
 
 $is_logged_in = false;
 if (isset($_COOKIE['login_token'])) {
@@ -30,27 +31,9 @@ if (isset($_COOKIE['login_token'])) {
     $stmt->close();
 }
 
-$current_page = basename($_SERVER['PHP_SELF']);
-if ($current_page !== 'register.php' && $current_page !== 'login.php'):
+include 'header.php';
+include 'vertical-navbar.php';
 ?>
-
-<?php if ($is_logged_in): ?>
-<nav class="footer-vertical-menu">
-	<button class="menu-toggle-arrow" aria-label="Toggle menu">
-		<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" stroke="#222" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-	</button>
-	<a href="/tues-Internship-2025-aklas/index.php" class="footer-vlink<?php if($current_page == 'index.php') echo ' active'; ?>">Home</a>
-	<a href="/tues-Internship-2025-aklas/dashboard.php" class="footer-vlink<?php if($current_page == 'dashboard.php') echo ' active'; ?>">Jobs Dashboard</a>
-	<a href="/tues-Internship-2025-aklas/submissions.php" class="footer-vlink<?php if($current_page == 'submissions.php') echo ' active'; ?>">Submissions</a>
-	<a href="/tues-Internship-2025-aklas/apply-submission.php" class="footer-vlink<?php if($current_page == 'apply-submission.php') echo ' active'; ?>">Apply Submission</a>
-	<a href="/tues-Internship-2025-aklas/view-submission.php" class="footer-vlink<?php if($current_page == 'view-submission.php') echo ' active'; ?>">View Submission</a>
-	<a href="/tues-Internship-2025-aklas/create-job.php" class="footer-vlink<?php if($current_page == 'create-job.php') echo ' active'; ?>">Create-Edit Job</a>
-	<a href="/tues-Internship-2025-aklas/category-dashboard.php" class="footer-vlink<?php if($current_page == 'category-dashboard.php') echo ' active'; ?>">Category Dashboard</a>
-	<a href="/tues-Internship-2025-aklas/profile.php" class="footer-vlink<?php if($current_page == 'profile.php') echo ' active'; ?>">My Profile</a>
-	<a href="/tues-Internship-2025-aklas/logout.php" class="footer-vlink<?php if($current_page == 'logout.php') echo ' active'; ?>">Logout</a>
-	<a href="/tues-Internship-2025-aklas/register.php" class="footer-vlink<?php if($current_page == 'register.php') echo ' active'; ?>">Register</a>
-</nav>
-<?php endif; ?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -66,42 +49,6 @@ if ($current_page !== 'register.php' && $current_page !== 'login.php'):
 </head>
 <body>
 	<div class="site-wrapper">
-		<header class="site-header">
-			<div class="row site-header-inner">
-				<div class="site-header-branding">
-					<h1 class="site-title"><a href="/tues-Internship-2025-aklas/index.php">Job Offers</a></h1>
-				</div>
-				<nav class="site-header-navigation">
-					<ul class="menu">
-						<li class="menu-item current-menu-item">
-							<a href="/tues-Internship-2025-aklas/index.php">Home</a>					
-						</li>
-
-						<?php if ($user_logged_in): ?>
-							<li class="menu-item">
-								<span style="color: black; margin-right: 10px;">Hi, <?= htmlspecialchars($display_name) ?></span>
-							</li>
-							<li class="menu-item">
-								<a href="/tues-Internship-2025-aklas/logout.php">Logout</a>
-							</li>
-						<?php else: ?>
-							<li class="menu-item">
-								<a href="/tues-Internship-2025-aklas/register.php">Register</a>
-							</li>
-							<li class="menu-item">
-								<a href="/tues-Internship-2025-aklas/login.php">Login</a>					
-							</li>
-						<?php endif; ?>
-					</ul>
-				</nav>
-				<button class="menu-toggle">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-						<path fill="none" d="M0 0h24v24H0z"/>
-						<path fill="currentColor" class="menu-toggle-bars" d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z"/>
-					</svg>
-				</button>
-			</div>
-		</header>
 
 		<main class="site-main">
 			<section class="section-fullwidth section-jobs-preview">
@@ -207,4 +154,3 @@ if ($current_page !== 'register.php' && $current_page !== 'login.php'):
 	</div>
 </body>
 </html>
-<?php endif; ?>
