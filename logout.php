@@ -1,4 +1,5 @@
 <?php
+session_start();
 require 'dbconn.php';
 
 if (isset($_COOKIE['login_token'])) {
@@ -10,6 +11,11 @@ if (isset($_COOKIE['login_token'])) {
     $stmt->bind_param("s", $token_hash);
     $stmt->execute();
 }
+
+// Clear all session variables
+session_unset();
+// Destroy the session
+session_destroy();
 
 // Clear cookie
 setcookie('login_token', '', time() - 3600, "/", "", true, true);

@@ -59,6 +59,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $user_logged_in) {
 
     $update_success = true;
 }
+
+if (!$user_id) {
+    header('Location: login.php');
+    exit;
+}
+
 ?>
 
 <?php if ($user_logged_in): ?>

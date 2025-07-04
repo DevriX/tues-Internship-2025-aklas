@@ -23,6 +23,12 @@ if (isset($_COOKIE['login_token'])) {
     }
     $stmt->close();
 }
+
+if (!$user_id) {
+    header('Location: login.php');
+    exit;
+}
+
 include 'header.php';
 include 'auth-user.php';
 include 'vertical-navbar.php';
