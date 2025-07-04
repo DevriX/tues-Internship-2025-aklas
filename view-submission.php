@@ -1,36 +1,39 @@
 <?php
 require_once 'dbconn.php';
+$user_logged_in = false;
+$display_name = '';
+$user = null;
 $current_page = basename($_SERVER['PHP_SELF']);
 
-// Get user info (assume session is started and user is logged in)
-session_start();
-
-$user_id = $_SESSION['user_id'] ?? null;
-
-if (!$user_id) {
-    header('Location: login.php');
-    exit;
+if (isset($_COOKIE['login_token'])) {
+    $token = $_COOKIE['login_token'];
+    $token_hash = hash('sha256', $token);
+    $stmt = $connection->prepare("
+        SELECT u.id, u.first_name, u.last_name, u.email, u.is_admin
+        FROM login_tokens lt
+        JOIN users u ON lt.user_id = u.id
+        WHERE lt.token_hash = ? AND lt.expiry > NOW()
+    ");
+    $stmt->bind_param("s", $token_hash);
+    $stmt->execute();
+    $stmt->store_result();
+    if ($stmt->num_rows === 1) {
+        $stmt->bind_result($user_id, $first_name, $last_name, $email, $is_admin);
+        $stmt->fetch();
+        $user_logged_in = true;
+        $display_name = $first_name;
+        $user = [
+            'id' => $user_id,
+            'first_name' => $first_name,
+            'last_name' => $last_name,
+            'email' => $email,
+            'is_admin' => $is_admin
+        ];
+    }
+    $stmt->close();
 }
-
-$user = [];
-if ($user_id) {
-    $result = mysqli_query($connection, "SELECT * FROM users WHERE id = $user_id");
-    $user = mysqli_fetch_assoc($result);
-}
-
-// Get submission ID from URL
-$submission_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-$submission = null;
-
-if ($submission_id > 0) {
-    $sql = "SELECT * FROM apply_submissions WHERE id = $submission_id";
-    $result = mysqli_query($connection, $sql);
-    $submission = mysqli_fetch_assoc($result);
-}
-
 
 include 'header.php';
-include 'auth-user.php';
 include 'vertical-navbar.php';
 ?>
 
