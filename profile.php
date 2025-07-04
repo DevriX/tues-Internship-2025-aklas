@@ -55,27 +55,6 @@ include 'vertical-navbar.php';
     <title>My Profile</title>
     <link rel="stylesheet" href="./css/master.css">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        .popup-success {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #4CAF50;
-            color: white;
-            padding: 15px 25px;
-            border-radius: 8px;
-            font-weight: bold;
-            z-index: 9999;
-            opacity: 1;
-            transition: opacity 0.5s ease-in-out;
-        }
-
-        .popup-success.hide {
-            opacity: 0;
-            pointer-events: none;
-        }
-    </style>
 </head>
 <body>
 

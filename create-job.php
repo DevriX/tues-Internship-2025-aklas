@@ -63,10 +63,20 @@ $salary = $_POST['salary'] ?? '';
 $description = $_POST['description'] ?? '';
 
 // Insert job with user_id only (company info is in users table)
-$sql = "INSERT INTO jobs (title, location, salary, description, user_id) VALUES ('$job_title', '$location', '$salary', '$description', '$user_id')";
+if($job_title == null){
+	echo "Job title is required";
+}elseif($location == null){
+	echo "Location is required";
+}elseif($salary == null	){
+	echo "Salary is required";
+}elseif($salary && $location && $job_title){
+	$sql = "INSERT INTO jobs (title, location, salary, description, user_id) VALUES ('$job_title', '$location', '$salary', '$description', '$user_id')";
+	mysqli_query($connection, $sql);
+}
+?>
 
-mysqli_query($connection, $sql);
-
+<?php
+$update_success = false;
 ?>
 
 <!DOCTYPE html>

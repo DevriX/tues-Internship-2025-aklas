@@ -1227,3 +1227,23 @@ ul {
 #vertical-navbar.open {
   display: block;
 }
+
+.popup-success {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #4CAF50;
+  color: white;
+  padding: 15px 25px;
+  border-radius: 8px;
+  font-weight: bold;
+  z-index: 9999;
+  opacity: 1;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.popup-success.hide {
+  opacity: 0;
+  pointer-events: none;
+}
