@@ -1,11 +1,23 @@
 <?php
-require 'dbconn.php';
+require_once 'dbconn.php';
+include 'auth-user.php';
+
+// Handle Approve/Reject actions
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['approve_job_id'])) {
+        $job_id = intval($_POST['approve_job_id']);
+        mysqli_query($connection, "UPDATE jobs SET approved = 1 WHERE id = $job_id");
+    } elseif (isset($_POST['reject_job_id'])) {
+        $job_id = intval($_POST['reject_job_id']);
+        mysqli_query($connection, "DELETE FROM jobs WHERE id = $job_id");
+    }
+}
+
 $user_logged_in = false;
 $display_name = '';
 $current_page = basename($_SERVER['PHP_SELF']);
 if ($current_page !== 'register.php' && $current_page !== 'login.php'):
 include 'header.php';
-include 'auth-user.php';
 include 'vertical-navbar.php';
 ?>
 
@@ -62,109 +74,41 @@ include 'vertical-navbar.php';
 						</div>
 					</div>
 					<ul class="jobs-listing">
+<?php
+// Fetch all jobs for dashboard
+$jobs_result = mysqli_query($connection, "SELECT * FROM jobs");
+while ($job = mysqli_fetch_assoc($jobs_result)):
+?>
 						<li class="job-card">
 							<div class="job-primary">
-								<h2 class="job-title"><a href="#">Front End Developer</a></h2>
+								<h2 class="job-title"><?= htmlspecialchars($job['title']) ?></h2>
 								<div class="job-meta">
-									<a class="meta-company" href="#">Company Awesome Ltd.</a>
-									<span class="meta-date">Posted 14 days ago</span>
+									<span class="meta-company">User ID: <?= htmlspecialchars($job['user_id']) ?></span>
 								</div>
 								<div class="job-details">
-									<span class="job-location">The Hague (The Netherlands)</span>
-									<span class="job-type">Contract staff</span>
+									<span class="job-location">Location: <?= htmlspecialchars($job['location']) ?></span>
+									<span class="job-salary">Salary: <?= htmlspecialchars($job['salary']) ?></span>
+								</div>
+								<div class="job-description">
+									<?= htmlspecialchars($job['description']) ?>
 								</div>
 							</div>
 							<div class="job-secondary">
-								<div class="job-actions">
-									<a href="#">Approve</a>
-									<a href="#">Reject</a>
-								</div>
-								<div class="job-edit">
-									<a href="#">View Submissions</a>
-									<a href="#">Edit</a>
-								</div>
+								<?php if (!$job['approved']): ?>
+									<form method="POST" style="display:inline;">
+										<input type="hidden" name="approve_job_id" value="<?= $job['id'] ?>">
+										<button type="submit">Approve</button>
+									</form>
+									<form method="POST" style="display:inline;">
+										<input type="hidden" name="reject_job_id" value="<?= $job['id'] ?>">
+										<button type="submit">Reject</button>
+									</form>
+								<?php else: ?>
+									<span class="approved-label">Approved</span>
+								<?php endif; ?>
 							</div>
 						</li>
-						<li class="job-card">
-							<div class="job-primary">
-								<h2 class="job-title"><a href="#">Front End Developer</a></h2>
-								<div class="job-meta">
-									<a class="meta-company" href="#">Company Awesome Ltd.</a>
-									<span class="meta-date">Posted 14 days ago</span>
-								</div>
-								<div class="job-details">
-									<span class="job-location">The Hague (The Netherlands)</span>
-									<span class="job-type">Contract staff</span>
-								</div>
-							</div>
-							<div class="job-secondary">
-								<div class="job-actions">
-									<a href="#">Approve</a>
-									<a href="#">Reject</a>
-								</div>
-								<div class="job-edit">
-									<a href="#">View Submissions</a>
-									<a href="#">Edit</a>
-								</div>
-							</div>
-						</li>
-						<li class="job-card">
-							<div class="job-primary">
-								<h2 class="job-title"><a href="#">Front End Developer</a></h2>
-								<div class="job-meta">
-									<a class="meta-company" href="#">Company Awesome Ltd.</a>
-									<span class="meta-date">Posted 14 days ago</span>
-								</div>
-								<div class="job-details">
-									<span class="job-location">The Hague (The Netherlands)</span>
-									<span class="job-type">Contract staff</span>
-								</div>
-							</div>
-							<div class="job-secondary">
-								<div class="job-edit">
-									<a href="#">View Submissions</a>
-									<a href="#">Edit</a>
-								</div>
-							</div>
-						</li>
-						<li class="job-card">
-							<div class="job-primary">
-								<h2 class="job-title"><a href="#">Front End Developer</a></h2>
-								<div class="job-meta">
-									<a class="meta-company" href="#">Company Awesome Ltd.</a>
-									<span class="meta-date">Posted 14 days ago</span>
-								</div>
-								<div class="job-details">
-									<span class="job-location">The Hague (The Netherlands)</span>
-									<span class="job-type">Contract staff</span>
-								</div>
-							</div>
-							<div class="job-secondary">
-								<div class="job-edit">
-									<a href="#">View Submissions</a>
-									<a href="#">Edit</a>
-								</div>
-							</div>
-						</li>
-						<li class="job-card">
-							<div class="job-primary">
-								<h2 class="job-title"><a href="#">Front End Developer</a></h2>
-								<div class="job-meta">
-									<a class="meta-company" href="#">Company Awesome Ltd.</a>
-									<span class="meta-date">Posted 14 days ago</span>
-								</div>
-								<div class="job-details">
-									<span class="job-location">The Hague (The Netherlands)</span>
-									<span class="job-type">Contract staff</span>
-								</div>
-							</div>
-							<div class="job-secondary">
-								<div class="job-edit">
-									<a href="#">View Submissions</a>
-									<a href="#">Edit</a>
-								</div>
-							</div>
-						</li>
+<?php endwhile; ?>
 					</ul>
 					<div class="jobs-pagination-wrapper">
 						<div class="nav-links"> 
