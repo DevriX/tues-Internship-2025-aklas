@@ -62,16 +62,19 @@ $location = $_POST['location'] ?? '';
 $salary = $_POST['salary'] ?? '';
 $description = $_POST['description'] ?? '';
 
+$error_message = '';
 // Insert job with user_id only (company info is in users table)
-if($job_title == null){
-	echo "Job title is required";
-}elseif($location == null){
-	echo "Location is required";
-}elseif($salary == null	){
-	echo "Salary is required";
-}elseif($salary && $location && $job_title){
-	$sql = "INSERT INTO jobs (title, location, salary, description, user_id) VALUES ('$job_title', '$location', '$salary', '$description', '$user_id')";
-	mysqli_query($connection, $sql);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if ($job_title == null) {
+        $error_message = 'Job title is required';
+    } elseif ($location == null) {
+        $error_message = 'Location is required';
+    } elseif ($salary == null) {
+        $error_message = 'Salary is required';
+    } elseif ($salary && $location && $job_title) {
+        $sql = "INSERT INTO jobs (title, location, salary, description, user_id) VALUES ('$job_title', '$location', '$salary', '$description', '$user_id')";
+        mysqli_query($connection, $sql);
+    }
 }
 ?>
 
@@ -90,6 +93,27 @@ $update_success = false;
 
 	<link rel="stylesheet" href="./css/master.css">
 	<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+    .popup-error {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #ff4d4f;
+        color: white;
+        padding: 15px 25px;
+        border-radius: 8px;
+        font-weight: bold;
+        z-index: 9999;
+        opacity: 1;
+        transition: opacity 0.5s ease-in-out;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+    .popup-error.hide {
+        opacity: 0;
+        pointer-events: none;
+    }
+    </style>
 </head>
 <body>
 	<div class="site-wrapper">
@@ -102,6 +126,17 @@ $update_success = false;
 							<div class="section-heading">
 								<h2 class="heading-title">New job</h2>
 							</div>
+                            <?php if (!empty($error_message)): ?>
+                                <div id="error-popup" class="popup-error">
+                                    <?= htmlspecialchars($error_message) ?>
+                                </div>
+                                <script>
+                                    setTimeout(function() {
+                                        var popup = document.getElementById('error-popup');
+                                        if (popup) popup.classList.add('hide');
+                                    }, 3000);
+                                </script>
+                            <?php endif; ?>
 							<form action="create-job.php" method="POST">
 								<div class="flex-container flex-wrap">
 									<div class="form-field-wrapper width-large">
