@@ -1,5 +1,13 @@
 <?php
-require 'dbconn.php';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+require_once 'auth-user.php';
+require_once 'dbconn.php';
 $user_logged_in = false;
 $display_name = '';
 $current_page = basename($_SERVER['PHP_SELF']);
@@ -23,8 +31,9 @@ if (isset($_COOKIE['login_token'])) {
     }
     $stmt->close();
 }
+
+
 include 'header.php';
-include 'auth-user.php';
 include 'vertical-navbar.php';
 ?>
 <!DOCTYPE html>
