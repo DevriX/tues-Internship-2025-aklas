@@ -7,12 +7,13 @@ $display_name = '';
 
 $first_name = $last_name = $email = $phone = $description = $company_name = $company_site = '';
 
+
 if (isset($_COOKIE['login_token'])) {
     $token = $_COOKIE['login_token'];
     $token_hash = hash('sha256', $token);
 
     $stmt = $connection->prepare("
-        SELECT u.first_name, u.last_name, u.email, u.phone_number, u.description, u.company_name, u.company_site
+        SELECT u.id, u.first_name, u.last_name, u.email, u.phone_number, u.description, u.company_name, u.company_site
         FROM login_tokens lt 
         JOIN users u ON lt.user_id = u.id 
         WHERE lt.token_hash = ? AND lt.expiry > NOW()
@@ -22,7 +23,7 @@ if (isset($_COOKIE['login_token'])) {
     $stmt->store_result();
 
     if ($stmt->num_rows === 1) {
-        $stmt->bind_result($first_name, $last_name, $email, $phone, $description, $company_name, $company_site);
+        $stmt->bind_result($user_id, $first_name, $last_name, $email, $phone, $description, $company_name, $company_site);
         $stmt->fetch();
         $user_logged_in = true;
         $display_name = $first_name;
@@ -40,64 +41,64 @@ include 'vertical-navbar.php';
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<title>My Profile</title>
-	<link rel="stylesheet" href="./css/master.css">
-	<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <title>My Profile</title>
+    <link rel="stylesheet" href="./css/master.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
 	<div class="site-wrapper">
 
-		<main class="site-main">
-			<section class="section-fullwidth">
-				<div class="row">	
-					<div class="flex-container centered-vertically centered-horizontally">
-						<div class="form-box box-shadow">
-							<div class="section-heading">
-								<h2 class="heading-title">My Profile</h2>
-							</div>
-							<form method="POST" action="#">
-								<div class="flex-container justified-horizontally">
-									<div class="primary-container">
-										<h4 class="form-title">About me</h4>
-										<div class="form-field-wrapper">
-											<input type="text" name="first_name" placeholder="First Name*" value="<?= htmlspecialchars($first_name) ?>" />
-										</div>
-										<div class="form-field-wrapper">
-											<input type="text" name="last_name" placeholder="Last Name*" value="<?= htmlspecialchars($last_name) ?>" />
-										</div>
-										<div class="form-field-wrapper">
-											<input type="email" name="email" placeholder="Email*" value="<?= htmlspecialchars($email) ?>" />
-										</div>
-										<div class="form-field-wrapper">
-											<input type="text" name="phone" placeholder="Phone Number" value="<?= htmlspecialchars($phone) ?>" />
-										</div>
-									</div>
+    <main class="site-main">
+        <section class="section-fullwidth">
+            <div class="row">
+                <div class="flex-container centered-vertically centered-horizontally">
+                    <div class="form-box box-shadow">
+                        <div class="section-heading">
+                            <h2 class="heading-title">My Profile</h2>
+                        </div>
+                        <form method="POST" action="profile.php">
+                            <div class="flex-container justified-horizontally">
+                                <div class="primary-container">
+                                    <h4 class="form-title">About me</h4>
+                                    <div class="form-field-wrapper">
+                                        <input type="text" name="first_name" placeholder="First Name*" value="<?= htmlspecialchars($first_name) ?>" required/>
+                                    </div>
+                                    <div class="form-field-wrapper">
+                                        <input type="text" name="last_name" placeholder="Last Name*" value="<?= htmlspecialchars($last_name) ?>" required/>
+                                    </div>
+                                    <div class="form-field-wrapper">
+                                        <input type="email" name="email" placeholder="Email*" value="<?= htmlspecialchars($email) ?>" required/>
+                                    </div>
+                                    <div class="form-field-wrapper">
+                                        <input type="text" name="phone" placeholder="Phone Number" value="<?= htmlspecialchars($phone) ?>" />
+                                    </div>
+                                </div>
 
-									<div class="secondary-container">
-										<h4 class="form-title">My Company</h4>
-										<div class="form-field-wrapper">
-											<input type="text" name="company_name" placeholder="Company Name" value="<?= htmlspecialchars($company_name) ?>" />
-										</div>
-										<div class="form-field-wrapper">
-											<input type="text" name="company_site" placeholder="Company Site" value="<?= htmlspecialchars($company_site) ?>" />
-										</div>
-										<div class="form-field-wrapper">
-											<textarea name="description" placeholder="Description"><?= htmlspecialchars($description) ?></textarea>
-										</div>
-									</div>
-								</div>
-								<button class="button" type="submit">Save</button>
-							</form>
-						</div>
-					</div>
-				</div>
-			</section>
-		</main>
-	</div>
+                                <div class="secondary-container">
+                                    <h4 class="form-title">My Company</h4>
+                                    <div class="form-field-wrapper">
+                                        <input type="text" name="company_name" placeholder="Company Name" value="<?= htmlspecialchars($company_name) ?>" />
+                                    </div>
+                                    <div class="form-field-wrapper">
+                                        <input type="text" name="company_site" placeholder="Company Site" value="<?= htmlspecialchars($company_site) ?>" />
+                                    </div>
+                                    <div class="form-field-wrapper">
+                                        <textarea name="description" placeholder="Description"><?= htmlspecialchars($description) ?></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="button" type="submit">Save</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
 </body>
 </html>
 
 <?php else: ?>
-<p>You are not logged in. <a href="login.php">Login here</a></p>
+    <p>You are not logged in. <a href="login.php">Login here</a></p>
 <?php endif; ?>
