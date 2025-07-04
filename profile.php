@@ -4,10 +4,11 @@ require 'dbconn.php';
 $user_logged_in = false;
 $user_id = null;
 
+$update_success = false;
 
 $first_name = $last_name = $email = $phone = $description = $company_name = $company_site = '';
 
-
+// Check login token
 if (isset($_COOKIE['login_token'])) {
     $token = $_COOKIE['login_token'];
     $token_hash = hash('sha256', $token);
@@ -31,9 +32,8 @@ if (isset($_COOKIE['login_token'])) {
     $stmt->close();
 }
 
-
+// Handle profile update
 if ($_SERVER["REQUEST_METHOD"] === "POST" && $user_logged_in) {
-    // Sanitize inputs
     $first_name = trim($_POST['first_name'] ?? '');
     $last_name = trim($_POST['last_name'] ?? '');
     $email = trim($_POST['email'] ?? '');
@@ -42,7 +42,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $user_logged_in) {
     $company_name = trim($_POST['company_name'] ?? '');
     $company_site = trim($_POST['company_site'] ?? '');
 
-    
     $update = $connection->prepare("
         UPDATE users SET 
             first_name = ?, 
@@ -58,8 +57,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $user_logged_in) {
     $update->execute();
     $update->close();
 
-    
-    echo "<p style='color:green; text-align:center;'>Profile updated successfully.</p>";
+    $update_success = true;
 }
 ?>
 
@@ -71,8 +69,30 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $user_logged_in) {
     <title>My Profile</title>
     <link rel="stylesheet" href="./css/master.css">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .popup-success {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .popup-success.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+    </style>
 </head>
 <body>
+
 <div class="site-wrapper">
     <header class="site-header">
         <div class="row site-header-inner">
@@ -98,6 +118,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $user_logged_in) {
                         <div class="section-heading">
                             <h2 class="heading-title">My Profile</h2>
                         </div>
+
+                        <?php if ($update_success): ?>
+                            <div id="success-popup" class="popup-success">
+                                Profile updated successfully.
+                            </div>
+                        <?php endif; ?>
+
                         <form method="POST" action="profile.php">
                             <div class="flex-container justified-horizontally">
                                 <div class="primary-container">
@@ -137,9 +164,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $user_logged_in) {
         </section>
     </main>
 </div>
+
+<?php if ($update_success): ?>
+    <script>
+        const popup = document.getElementById('success-popup');
+        setTimeout(() => {
+            popup.classList.add('hide');
+        }, 3000);
+    </script>
+<?php endif; ?>
+
 </body>
 </html>
-
 <?php else: ?>
     <p>You are not logged in. <a href="login.php">Login here</a></p>
 <?php endif; ?>
