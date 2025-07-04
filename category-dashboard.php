@@ -24,6 +24,7 @@ if (isset($_COOKIE['login_token'])) {
     $stmt->close();
 }
 include 'header.php';
+include 'auth-user.php';
 include 'vertical-navbar.php';
 ?>
 <!DOCTYPE html>

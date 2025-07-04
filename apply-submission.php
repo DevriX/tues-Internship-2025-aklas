@@ -34,6 +34,7 @@ if (isset($_COOKIE['login_token'])) {
     $stmt->close();
 }
 include 'header.php';
+include 'auth-user.php';
 include 'vertical-navbar.php';
 // If you need more user info:
 $sql = "SELECT * FROM users WHERE id = $user_id";

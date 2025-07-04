@@ -113,6 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 include 'header.php';
+include 'auth-user.php';
 include 'vertical-navbar.php';
 ?>
 

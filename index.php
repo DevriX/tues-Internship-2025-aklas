@@ -32,6 +32,7 @@ if (isset($_COOKIE['login_token'])) {
 }
 
 include 'header.php';
+include 'auth-user.php';
 include 'vertical-navbar.php';
 ?>
 
