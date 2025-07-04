@@ -4,12 +4,14 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
 // Get user info (assume session is started and user is logged in)
 session_start();
+
+$user_id = $_SESSION['user_id'] ?? null;
+
 if (!$user_id) {
     header('Location: login.php');
     exit;
 }
 
-$user_id = $_SESSION['user_id'] ?? null;
 $user = [];
 if ($user_id) {
     $result = mysqli_query($connection, "SELECT * FROM users WHERE id = $user_id");

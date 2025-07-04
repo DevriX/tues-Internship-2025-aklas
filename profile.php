@@ -65,6 +65,17 @@ if (!$user_id) {
     exit;
 }
 
+// Add user array for navbar logic
+$user = [
+    'id' => $user_id,
+    'first_name' => $first_name,
+    'last_name' => $last_name,
+    'email' => $email,
+    // You may want to fetch is_admin if needed for the menu
+];
+$current_page = basename($_SERVER['PHP_SELF']);
+include 'vertical-navbar.php';
+
 ?>
 
 <?php if ($user_logged_in): ?>
