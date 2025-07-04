@@ -2,26 +2,50 @@
 require_once 'dbconn.php';
 include 'auth-user.php';
 
-// Handle Approve/Reject actions
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['approve_job_id'])) {
-        $job_id = intval($_POST['approve_job_id']);
-        mysqli_query($connection, "UPDATE jobs SET approved = 1 WHERE id = $job_id");
-    } elseif (isset($_POST['reject_job_id'])) {
-        $job_id = intval($_POST['reject_job_id']);
-        mysqli_query($connection, "DELETE FROM jobs WHERE id = $job_id");
-    }
-}
-
 $user_logged_in = false;
 $display_name = '';
+$user = null;
 $current_page = basename($_SERVER['PHP_SELF']);
-if ($current_page !== 'register.php' && $current_page !== 'login.php'):
+$update_success = false;
+
+$first_name = $last_name = $email = $phone = $description = $company_name = $company_site = '';
+
+if (isset($_COOKIE['login_token'])) {
+    $token = $_COOKIE['login_token'];
+    $token_hash = hash('sha256', $token);
+    $stmt = $connection->prepare("
+        SELECT u.id, u.first_name, u.last_name, u.email, u.phone_number, u.description, u.company_name, u.company_site, u.is_admin
+        FROM login_tokens lt
+        JOIN users u ON lt.user_id = u.id
+        WHERE lt.token_hash = ? AND lt.expiry > NOW()
+    ");
+    $stmt->bind_param("s", $token_hash);
+    $stmt->execute();
+    $stmt->store_result();
+    if ($stmt->num_rows === 1) {
+        $stmt->bind_result($user_id, $first_name, $last_name, $email, $phone, $description, $company_name, $company_site, $is_admin);
+        $stmt->fetch();
+        $user_logged_in = true;
+        $display_name = $first_name;
+        $user = [
+            'id' => $user_id,
+            'first_name' => $first_name,
+            'last_name' => $last_name,
+            'email' => $email,
+            'is_admin' => $is_admin
+        ];
+    }
+    $stmt->close();
+}
+
+if (!$user_logged_in) {
+    header('Location: login.php');
+    exit;
+}
+
 include 'header.php';
 include 'vertical-navbar.php';
 ?>
-
-<?php endif; ?> 
 
 <!DOCTYPE html>
 <html lang="en">
@@ -132,5 +156,6 @@ while ($job = mysqli_fetch_assoc($jobs_result)):
 			<a id="maps-link" href="#" target="_blank">Open in Google Maps</a>
 		</div>
 	</div>
+<script src="main.js"></script>
 </body>
 </html>
