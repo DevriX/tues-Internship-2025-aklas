@@ -87,6 +87,7 @@ include 'vertical-navbar.php';
 							$sql = "SELECT jobs.*, users.company_name
 									FROM jobs
 									LEFT JOIN users ON jobs.user_id = users.id
+									WHERE jobs.approved = 1
 									ORDER BY jobs.id DESC";
 							$result = mysqli_query($connection, $sql);
 
