@@ -2,47 +2,78 @@
 require 'dbconn.php';
 
 $user_logged_in = false;
-$display_name = '';
-$user = null;
-$current_page = basename($_SERVER['PHP_SELF']);
+$user_id = null;
+
 $update_success = false;
 
 $first_name = $last_name = $email = $phone = $description = $company_name = $company_site = '';
 
+// Check login token
 if (isset($_COOKIE['login_token'])) {
     $token = $_COOKIE['login_token'];
     $token_hash = hash('sha256', $token);
+
     $stmt = $connection->prepare("
-        SELECT u.id, u.first_name, u.last_name, u.email, u.phone_number, u.description, u.company_name, u.company_site, u.is_admin
-        FROM login_tokens lt
-        JOIN users u ON lt.user_id = u.id
+        SELECT u.id, u.first_name, u.last_name, u.email, u.phone_number, u.description, u.company_name, u.company_site
+        FROM login_tokens lt 
+        JOIN users u ON lt.user_id = u.id 
         WHERE lt.token_hash = ? AND lt.expiry > NOW()
     ");
     $stmt->bind_param("s", $token_hash);
     $stmt->execute();
     $stmt->store_result();
+
     if ($stmt->num_rows === 1) {
-        $stmt->bind_result($user_id, $first_name, $last_name, $email, $phone, $description, $company_name, $company_site, $is_admin);
+        $stmt->bind_result($user_id, $first_name, $last_name, $email, $phone, $description, $company_name, $company_site);
         $stmt->fetch();
         $user_logged_in = true;
-        $display_name = $first_name;
-        $user = [
-            'id' => $user_id,
-            'first_name' => $first_name,
-            'last_name' => $last_name,
-            'email' => $email,
-            'is_admin' => $is_admin
-        ];
     }
+
     $stmt->close();
 }
 
-if (!$user_logged_in) {
+// Handle profile update
+if ($_SERVER["REQUEST_METHOD"] === "POST" && $user_logged_in) {
+    $first_name = trim($_POST['first_name'] ?? '');
+    $last_name = trim($_POST['last_name'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $phone = trim($_POST['phone'] ?? '');
+    $description = trim($_POST['description'] ?? '');
+    $company_name = trim($_POST['company_name'] ?? '');
+    $company_site = trim($_POST['company_site'] ?? '');
+
+    $update = $connection->prepare("
+        UPDATE users SET 
+            first_name = ?, 
+            last_name = ?, 
+            email = ?, 
+            phone_number = ?, 
+            description = ?, 
+            company_name = ?, 
+            company_site = ?
+        WHERE id = ?
+    ");
+    $update->bind_param("sssssssi", $first_name, $last_name, $email, $phone, $description, $company_name, $company_site, $user_id);
+    $update->execute();
+    $update->close();
+
+    $update_success = true;
+}
+
+if (!$user_id) {
     header('Location: login.php');
     exit;
 }
 
-include 'header.php';
+// Add user array for navbar logic
+$user = [
+    'id' => $user_id,
+    'first_name' => $first_name,
+    'last_name' => $last_name,
+    'email' => $email,
+    // You may want to fetch is_admin if needed for the menu
+];
+$current_page = basename($_SERVER['PHP_SELF']);
 include 'vertical-navbar.php';
 
 ?>
@@ -80,6 +111,21 @@ include 'vertical-navbar.php';
 <body>
 
 <div class="site-wrapper">
+    <header class="site-header">
+        <div class="row site-header-inner">
+            <div class="site-header-branding">
+                <h1 class="site-title"><a href="/tues-Internship-2025-aklas/index.php">Job Offers</a></h1>
+            </div>
+            <nav class="site-header-navigation">
+                <ul class="menu">
+                    <li class="menu-item"><a href="/tues-Internship-2025-aklas/index.php">Home</a></li>
+                    <li class="menu-item"><a href="/tues-Internship-2025-aklas/dashboard.php">Dashboard</a></li>
+                    <li class="menu-item current-menu-item"><a href="/tues-Internship-2025-aklas/profile.php">My Profile</a></li>
+                    <li class="menu-item"><a href="/tues-Internship-2025-aklas/logout.php">Sign Out</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
 
     <main class="site-main">
         <section class="section-fullwidth">
@@ -144,7 +190,7 @@ include 'vertical-navbar.php';
         }, 3000);
     </script>
 <?php endif; ?>
-<script src="main.js"></script>
+
 </body>
 </html>
 <?php else: ?>
