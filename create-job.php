@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sql = "INSERT INTO jobs (title, location, salary, description, user_id) VALUES ('$job_title', '$location', '$salary', '$description', '$user_id')";
         if (mysqli_query($connection, $sql)) {
             $success_message = 'Job created SUCCESSFULLY, waiting for approval';
-            // Clear form data after successful submission
+            // Clear form data only after successful submission
             $job_title = $location = $salary = $description = '';
         } else {
             $error_message = 'Error creating job. Please try again.';
@@ -147,16 +147,16 @@ $update_success = false;
 							<form action="create-job.php" method="POST">
 								<div class="flex-container flex-wrap">
 									<div class="form-field-wrapper width-large">
-										<input type="text" placeholder="Job title*" name="job-title"/>
+										<input type="text" placeholder="Job title*" name="job-title" value="<?= htmlspecialchars($job_title) ?>"/>
 									</div>
 									<div class="form-field-wrapper width-large">
-										<input type="text" placeholder="Location*" name="location"/>
+										<input type="text" placeholder="Location*" name="location" value="<?= htmlspecialchars($location) ?>"/>
 									</div>
 									<div class="form-field-wrapper width-large">
-										<input type="text" placeholder="Salary (in leva)*" name="salary"/>
+										<input type="text" placeholder="Salary (in leva)*" name="salary" value="<?= htmlspecialchars($salary) ?>"/>
 									</div>
 									<div class="form-field-wrapper width-large">
-										<textarea placeholder="Description" name="description"></textarea>
+										<textarea placeholder="Description" name="description"><?= htmlspecialchars($description) ?></textarea>
 									</div>	
 								</div>
 								<button type="submit" class="button">
