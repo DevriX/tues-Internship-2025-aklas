@@ -57,13 +57,17 @@ if (!$user_id) {
     exit;
 }
 
-$job_title = $_POST['job-title'] ?? '';
-$location = $_POST['location'] ?? '';
-$salary = $_POST['salary'] ?? '';
-$description = $_POST['description'] ?? '';
+$job_title = $_POST['job-title'] ?? null;
+$location = $_POST['location'] ?? null;
+$salary = $_POST['salary'] ?? null;
+$description = $_POST['description'] ?? null;
+
+
 
 $error_message = '';
 $success_message = '';
+
+
 // Insert job with user_id only (company info is in users table)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($job_title == null) {
@@ -72,7 +76,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error_message = 'Location is required';
     } elseif ($salary == null) {
         $error_message = 'Salary is required';
-    } elseif ($salary && $location && $job_title) {
+    } //Check if $job_title is made only out of letters
+	elseif(filter_var(!ctype_alpha($job_title))){
+		$error_message = "Job title should only be made by letters";
+	 }  //Check if $salary is made only out of numbers
+	elseif(filter_var($salary, FILTER_VALIDATE_INT) == false){
+		$error_message = "Salary should only be made by numbers";
+	} elseif ($salary && $location && $job_title) {
         $sql = "INSERT INTO jobs (title, location, salary, description, user_id) VALUES ('$job_title', '$location', '$salary', '$description', '$user_id')";
         if (mysqli_query($connection, $sql)) {
             $success_message = 'Job created SUCCESSFULLY, waiting for approval';
@@ -140,13 +150,13 @@ $update_success = false;
 										<input type="text" placeholder="Job title*" name="job-title"/>
 									</div>
 									<div class="form-field-wrapper width-large">
-										<input type="text" placeholder="Location" name="location"/>
+										<input type="text" placeholder="Location*" name="location"/>
 									</div>
 									<div class="form-field-wrapper width-large">
-										<input type="text" placeholder="Salary" name="salary"/>
+										<input type="text" placeholder="Salary (in leva)*" name="salary"/>
 									</div>
 									<div class="form-field-wrapper width-large">
-										<textarea placeholder="Description*" name="description"></textarea>
+										<textarea placeholder="Description" name="description"></textarea>
 									</div>	
 								</div>
 								<button type="submit" class="button">
