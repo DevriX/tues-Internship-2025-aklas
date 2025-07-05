@@ -63,6 +63,7 @@ $salary = $_POST['salary'] ?? '';
 $description = $_POST['description'] ?? '';
 
 $error_message = '';
+$success_message = '';
 // Insert job with user_id only (company info is in users table)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($job_title == null) {
@@ -73,7 +74,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error_message = 'Salary is required';
     } elseif ($salary && $location && $job_title) {
         $sql = "INSERT INTO jobs (title, location, salary, description, user_id) VALUES ('$job_title', '$location', '$salary', '$description', '$user_id')";
-        mysqli_query($connection, $sql);
+        if (mysqli_query($connection, $sql)) {
+            $success_message = 'Job created SUCCESSFULLY, waiting for approval';
+            // Clear form data after successful submission
+            $job_title = $location = $salary = $description = '';
+        } else {
+            $error_message = 'Error creating job. Please try again.';
+        }
     }
 }
 ?>
@@ -93,27 +100,6 @@ $update_success = false;
 
 	<link rel="stylesheet" href="./css/master.css">
 	<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-    .popup-error {
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background-color: #ff4d4f;
-        color: white;
-        padding: 15px 25px;
-        border-radius: 8px;
-        font-weight: bold;
-        z-index: 9999;
-        opacity: 1;
-        transition: opacity 0.5s ease-in-out;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-    }
-    .popup-error.hide {
-        opacity: 0;
-        pointer-events: none;
-    }
-    </style>
 </head>
 <body>
 	<div class="site-wrapper">
@@ -133,6 +119,17 @@ $update_success = false;
                                 <script>
                                     setTimeout(function() {
                                         var popup = document.getElementById('error-popup');
+                                        if (popup) popup.classList.add('hide');
+                                    }, 3000);
+                                </script>
+                            <?php endif; ?>
+                            <?php if (!empty($success_message)): ?>
+                                <div id="success-popup" class="popup-success">
+                                    <?= htmlspecialchars($success_message) ?>
+                                </div>
+                                <script>
+                                    setTimeout(function() {
+                                        var popup = document.getElementById('success-popup');
                                         if (popup) popup.classList.add('hide');
                                     }, 3000);
                                 </script>
