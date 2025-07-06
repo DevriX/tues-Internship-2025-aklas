@@ -5,6 +5,7 @@ $user_logged_in = false;
 $display_name = '';
 $current_page = basename($_SERVER['PHP_SELF']);
 
+// Authenticate via cookie
 if (isset($_COOKIE['login_token'])) {
     $token = $_COOKIE['login_token'];
     $token_hash = hash('sha256', $token);
@@ -31,7 +32,7 @@ include 'header.php';
 include 'auth-user.php';
 include 'vertical-navbar.php';
 
-// Get job ID from query parameter
+// Get job ID from URL query parameter
 $job_id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $job = null;
 
@@ -50,7 +51,6 @@ if ($job_id > 0) {
     }
     $stmt->close();
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -99,8 +99,12 @@ if ($job_id > 0) {
 									<img src="https://i.imgur.com/ZbILm3F.png" alt="Company Logo">
 								</div>
 							</div>
-							<!-- Pass job_id dynamically -->
-							<a href="apply-submission.php?job_id=<?php echo urlencode($job['id']); ?>" class="button button-wide">Apply now</a>
+
+							<!-- ✅ This link is correct and will pass the ID via GET -->
+							<a href="apply-submission.php?id=<?php echo $job['id']; ?>" class="button button-wide">Apply now</a>
+							<!-- ✅ Debug: Show ID -->
+							<p style="margin-top: 1em;">Job ID: <?php echo $job['id']; ?></p>
+
 							<a href="https://www.example.com/" target="_blank">example.com</a>
 						</aside>
 					</div>

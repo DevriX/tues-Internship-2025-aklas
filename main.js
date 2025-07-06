@@ -1,23 +1,14 @@
-// For job name click on index.html
 document.addEventListener('DOMContentLoaded', function() {
-    // Job name click: go to single.html with job name in query string
-    // document.querySelectorAll('.job-title a').forEach(function(link) {
-    //     link.addEventListener('click', function(e) {
-    //         e.preventDefault();
-    //         const jobName = link.textContent.trim();
-    //     });
-    // });
-
-    // "Apply now" button click (works on any page)
-    const applyBtn = document.querySelector('.button.button-wide');
-    if (applyBtn) {
-        applyBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            window.location.href = 'apply-submission.php';
+            // 🔹 Job name click: redirect with ?job=...
+        document.querySelectorAll('.job-title a').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const jobName = link.textContent.trim();
+                window.location.href = `single.php?job=${encodeURIComponent(jobName)}`;
+            });
         });
-    }
 
-    // Ensure modal HTML exists in the document
+    // Ensure modal HTML exists
     function ensureMapsModal() {
         if (!document.getElementById('maps-modal')) {
             const modal = document.createElement('div');
@@ -45,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     ensureMapsModal();
 
-    // Convert all .job-location spans to <a> tags if not already
+    // Convert .job-location to <a> if needed
     document.querySelectorAll('.job-location').forEach(function(loc) {
         if (loc.tagName !== 'A') {
             const locationText = loc.textContent.trim();
@@ -53,12 +44,12 @@ document.addEventListener('DOMContentLoaded', function() {
             a.href = '#';
             a.textContent = locationText;
             a.className = loc.className;
-            a.removeAttribute('style'); // Remove inline styles, let CSS handle
+            a.removeAttribute('style');
             loc.replaceWith(a);
         }
     });
 
-    // Add click event to all .job-location <a> tags
+    // Add map modal click to all .job-location links
     document.querySelectorAll('.job-location').forEach(function(loc) {
         loc.addEventListener('click', function(e) {
             e.preventDefault();
@@ -93,49 +84,35 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // On single.html: Show job name from query string
+    // Show job name from query string on single.php
     if (window.location.pathname.endsWith('single.php')) {
         const params = new URLSearchParams(window.location.search);
         const jobName = params.get('job');
         if (jobName) {
-            // Find the job title and set it
             const jobTitle = document.querySelector('.job-title a');
             if (jobTitle) jobTitle.textContent = jobName;
         }
     }
 
-    // Universal search bar functionality for all pages
+    // Universal search
     const searchInput = document.querySelector('.search-form-input');
     const jobsList = document.querySelector('.jobs-listing');
     if (searchInput && jobsList) {
         searchInput.addEventListener('input', function() {
             const query = searchInput.value.trim().toLowerCase();
-            let anyMatch = false;
             jobsList.querySelectorAll('.job-card').forEach(function(card) {
-                // Try to match job title, company, and location
                 const title = card.querySelector('.job-title')?.textContent?.toLowerCase() || '';
                 const company = card.querySelector('.meta-company')?.textContent?.toLowerCase() || '';
                 const location = card.querySelector('.job-location')?.textContent?.toLowerCase() || '';
-                const match =
-                    title.includes(query) ||
-                    company.includes(query) ||
-                    location.includes(query);
-                if (query === '') {
-                    card.style.display = '';
-                    anyMatch = true;
-                } else if (match) {
-                    card.style.display = '';
-                    anyMatch = true;
-                } else {
-                    card.style.display = 'none';
-                }
+                const match = title.includes(query) || company.includes(query) || location.includes(query);
+                card.style.display = match || query === '' ? '' : 'none';
             });
         });
     }
 
-    // Collapsible vertical menu toggle
-    var menu = document.querySelector('.footer-vertical-menu');
-    var toggleBtn = document.querySelector('.footer-vertical-menu .menu-toggle-arrow');
+    // Collapsible vertical menu
+    const menu = document.querySelector('.footer-vertical-menu');
+    const toggleBtn = document.querySelector('.footer-vertical-menu .menu-toggle-arrow');
     if (menu && toggleBtn) {
         toggleBtn.addEventListener('click', function() {
             menu.classList.toggle('collapsed');
@@ -143,33 +120,34 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Toggle vertical navbar from burger menu
+// Vertical navbar toggling
 window.addEventListener('DOMContentLoaded', function() {
-  var menuBtn = document.getElementById('menu-toggle-btn');
-  var verticalNavbar = document.getElementById('vertical-navbar');
-  var closeBtn = document.getElementById('close-vertical-navbar');
+    const menuBtn = document.getElementById('menu-toggle-btn');
+    const verticalNavbar = document.getElementById('vertical-navbar');
+    const closeBtn = document.getElementById('close-vertical-navbar');
 
-  if (menuBtn && verticalNavbar) {
-    menuBtn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      verticalNavbar.classList.add('open');
-    });
-  }
-  if (closeBtn && verticalNavbar) {
-    closeBtn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      verticalNavbar.classList.remove('open');
-    });
-  }
-  // Optional: clicking outside closes the navbar
-  document.addEventListener('click', function(event) {
-    if (
-      verticalNavbar &&
-      verticalNavbar.classList.contains('open') &&
-      !verticalNavbar.contains(event.target) &&
-      event.target !== menuBtn
-    ) {
-      verticalNavbar.classList.remove('open');
+    if (menuBtn && verticalNavbar) {
+        menuBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            verticalNavbar.classList.add('open');
+        });
     }
-  });
+
+    if (closeBtn && verticalNavbar) {
+        closeBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            verticalNavbar.classList.remove('open');
+        });
+    }
+
+    document.addEventListener('click', function(event) {
+        if (
+            verticalNavbar &&
+            verticalNavbar.classList.contains('open') &&
+            !verticalNavbar.contains(event.target) &&
+            event.target !== menuBtn
+        ) {
+            verticalNavbar.classList.remove('open');
+        }
+    });
 });

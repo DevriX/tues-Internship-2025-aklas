@@ -35,13 +35,26 @@ if ($stmt->num_rows === 1) {
 }
 $stmt->close();
 
-	// Get job_id from query param
-			$job_id = 0;
-		if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-			$job_id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
-		} elseif (isset($_GET['id'])) {
-			$job_id = (int) $_GET['id'];
+		// Get job_id from query param
+		$job_id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+		echo "$job_id";
+		$job = null;
+
+		if ($job_id > 0) {
+		$stmt = $connection->prepare("
+			SELECT jobs.*, users.company_name 
+			FROM jobs 
+			LEFT JOIN users ON jobs.user_id = users.id 
+			WHERE jobs.id = ?
+		");
+		$stmt->bind_param("i", $job_id);
+		$stmt->execute();
+		$result = $stmt->get_result();
+		if ($result->num_rows === 1) {
+			$job = $result->fetch_assoc();
 		}
+		$stmt->close();
+	}
 
 	// Optional: check if the job exists
 	$stmt = $connection->prepare("SELECT id FROM jobs WHERE id = ?");
@@ -61,7 +74,6 @@ include 'vertical-navbar.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	$message = mysqli_real_escape_string($connection, $_POST['message']);
 	$cv_file_path = null;
-	$job_id = isset($_POST['job_id']) ? (int) $_POST['job_id'] : 0;
 
 	// Handle file upload
 	if (isset($_FILES['cv_file_path']) && $_FILES['cv_file_path']['error'] == UPLOAD_ERR_OK) {
@@ -77,10 +89,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 	// Insert application with job_id
 	$sql = "INSERT INTO apply_submissions 
-		(user_id, job_id, first_name, last_name, email, phone_number, message, cv_file_path, applied_at)
+		(job_id, user_id, first_name, last_name, email, phone_number, message, cv_file_path, applied_at)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
 	$stmt = $connection->prepare($sql);
-	$stmt->bind_param("iissssss", $user_id, $job_id, $first_name, $last_name, $email, $phone_number, $message, $cv_file_path);
+	$stmt->bind_param("iissssss", $job_id, $user_id, $first_name, $last_name, $email, $phone_number, $message, $cv_file_path);
 
 	if ($stmt->execute()) {
 		echo "<p>Application submitted successfully!</p>";
