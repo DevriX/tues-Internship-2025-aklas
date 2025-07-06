@@ -99,7 +99,8 @@ if ($job_id > 0) {
 									<img src="https://i.imgur.com/ZbILm3F.png" alt="Company Logo">
 								</div>
 							</div>
-							<a href="#" class="button button-wide">Apply now</a>
+							<!-- Pass job_id dynamically -->
+							<a href="apply-submission.php?job_id=<?php echo urlencode($job['id']); ?>" class="button button-wide">Apply now</a>
 							<a href="https://www.example.com/" target="_blank">example.com</a>
 						</aside>
 					</div>
