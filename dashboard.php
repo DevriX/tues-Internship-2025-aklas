@@ -2,6 +2,17 @@
 require_once 'dbconn.php';
 include 'auth-user.php';
 
+// Handle Approve/Reject actions
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['approve_job_id'])) {
+        $job_id = intval($_POST['approve_job_id']);
+        mysqli_query($connection, "UPDATE jobs SET approved = 1 WHERE id = $job_id");
+    } elseif (isset($_POST['reject_job_id'])) {
+        $job_id = intval($_POST['reject_job_id']);
+        mysqli_query($connection, "DELETE FROM jobs WHERE id = $job_id");
+    }
+}
+
 $user_logged_in = false;
 $display_name = '';
 $user = null;
