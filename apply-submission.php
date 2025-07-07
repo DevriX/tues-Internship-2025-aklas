@@ -37,35 +37,49 @@ if ($stmt->num_rows === 1) {
 }
 $stmt->close();
 
-		// Get job_id from query param
-		$job_id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
-		$job = null;
+// Get job_id from query param
+$job_id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+$job = null;
 
-		if ($job_id > 0) {
-		$stmt = $connection->prepare("
-			SELECT jobs.*, users.company_name 
-			FROM jobs 
-			LEFT JOIN users ON jobs.user_id = users.id 
-			WHERE jobs.id = ?
-		");
-		$stmt->bind_param("i", $job_id);
-		$stmt->execute();
-		$result = $stmt->get_result();
-		if ($result->num_rows === 1) {
-			$job = $result->fetch_assoc();
-		}
-		$stmt->close();
-	}
-
-	// Optional: check if the job exists
-	$stmt = $connection->prepare("SELECT id FROM jobs WHERE id = ?");
+if ($job_id > 0) {
+	$stmt = $connection->prepare("
+		SELECT jobs.*, users.company_name 
+		FROM jobs 
+		LEFT JOIN users ON jobs.user_id = users.id 
+		WHERE jobs.id = ?
+	");
 	$stmt->bind_param("i", $job_id);
 	$stmt->execute();
-	$stmt->store_result();
-	if ($stmt->num_rows === 0) {
-		die("Invalid job ID.");
+	$result = $stmt->get_result();
+	if ($result->num_rows === 1) {
+		$job = $result->fetch_assoc();
 	}
 	$stmt->close();
+}
+
+// Optional: check if the job exists
+$stmt = $connection->prepare("SELECT id FROM jobs WHERE id = ?");
+$stmt->bind_param("i", $job_id);
+$stmt->execute();
+$stmt->store_result();
+if ($stmt->num_rows === 0) {
+	die("Invalid job ID.");
+}
+$stmt->close();
+
+// Check if user has already applied to this job
+$already_applied = false;
+$check_stmt = $connection->prepare("
+	SELECT id FROM apply_submissions 
+	WHERE job_id = ? AND user_id = ?
+");
+$check_stmt->bind_param("ii", $job_id, $user_id);
+$check_stmt->execute();
+$check_stmt->store_result();
+if ($check_stmt->num_rows > 0) {
+    $already_applied = true;
+}
+$check_stmt->close();
 
 include 'header.php';
 include 'auth-user.php';
@@ -73,34 +87,39 @@ include 'vertical-navbar.php';
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-	$message = mysqli_real_escape_string($connection, $_POST['message']);
-	$cv_file_path = null;
-
-	// Handle file upload
-	if (isset($_FILES['cv_file_path']) && $_FILES['cv_file_path']['error'] == UPLOAD_ERR_OK) {
-		$upload_dir = 'uploads/';
-		if (!is_dir($upload_dir)) {
-			mkdir($upload_dir, 0777, true);
-		}
-		$filename = basename($_FILES['cv_file_path']['name']);
-		$unique_filename = time() . '_' . bin2hex(random_bytes(4)) . '_' . $filename;
-		$cv_file_path = $upload_dir . $unique_filename;
-		move_uploaded_file($_FILES['cv_file_path']['tmp_name'], $cv_file_path);
-	}
-
-	// Insert application with job_id
-	$sql = "INSERT INTO apply_submissions 
-		(job_id, user_id, first_name, last_name, email, phone_number, message, cv_file_path, applied_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
-	$stmt = $connection->prepare($sql);
-	$stmt->bind_param("iissssss", $job_id, $user_id, $first_name, $last_name, $email, $phone_number, $message, $cv_file_path);
-
-	if ($stmt->execute()) {
-		echo "<p>Application submitted successfully!</p>";
+	if ($already_applied) {
+		echo "<p style='color: red; font-weight: bold; text-align: center;'>You have already applied for this job.</p>";
 	} else {
-		echo "<p>Error: " . htmlspecialchars($stmt->error) . "</p>";
+		$message = mysqli_real_escape_string($connection, $_POST['message']);
+		$cv_file_path = null;
+
+		// Handle file upload
+		if (isset($_FILES['cv_file_path']) && $_FILES['cv_file_path']['error'] == UPLOAD_ERR_OK) {
+			$upload_dir = 'uploads/';
+			if (!is_dir($upload_dir)) {
+				mkdir($upload_dir, 0777, true);
+			}
+			$filename = basename($_FILES['cv_file_path']['name']);
+			$unique_filename = time() . '_' . bin2hex(random_bytes(4)) . '_' . $filename;
+			$cv_file_path = $upload_dir . $unique_filename;
+			move_uploaded_file($_FILES['cv_file_path']['tmp_name'], $cv_file_path);
+		}
+
+		// Insert application
+		$sql = "INSERT INTO apply_submissions 
+			(job_id, user_id, first_name, last_name, email, phone_number, message, cv_file_path, applied_at)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+		$stmt = $connection->prepare($sql);
+		$stmt->bind_param("iissssss", $job_id, $user_id, $first_name, $last_name, $email, $phone_number, $message, $cv_file_path);
+
+		if ($stmt->execute()) {
+			echo "<p style='color: green; font-weight: bold; text-align: center;'>Application submitted successfully!</p>";
+			$already_applied = true; // Set to true so form doesn't show again
+		} else {
+			echo "<p style='color: red; text-align: center;'>Error: " . htmlspecialchars($stmt->error) . "</p>";
+		}
+		$stmt->close();
 	}
-	$stmt->close();
 }
 ?>
 
@@ -112,6 +131,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="./css/master.css">
 	<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+	<style>
+		.center-heading {
+			text-align: center;
+			margin-bottom: 20px;
+		}
+	</style>
 </head>
 <body>
 	<div class="site-wrapper">
@@ -122,9 +147,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 				<div class="row">	
 					<div class="flex-container centered-vertically centered-horizontally">
 						<div class="form-box box-shadow">
-							<div class="section-heading">
+							<div class="section-heading center-heading">
 								<h2 class="heading-title">Submit application for <?php echo htmlspecialchars($job['title']); ?> </h2>
 							</div>
+
+							<?php if ($already_applied): ?>
+								<p style="color: red; font-weight: bold; text-align: center;">You have already applied for this job. You cannot apply again.</p>
+							<?php else: ?>
 
 							<form method="POST" enctype="multipart/form-data" action="">
 								<input type="hidden" name="job_id" value="<?php echo htmlspecialchars($job_id); ?>">
@@ -160,6 +189,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 								<button class="button" type="submit">Submit</button>
 							</form>
+
+							<?php endif; ?>
 
 						</div>
 					</div>
