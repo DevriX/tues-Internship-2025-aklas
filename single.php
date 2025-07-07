@@ -38,7 +38,7 @@ $job = null;
 
 if ($job_id > 0) {
     $stmt = $connection->prepare("
-        SELECT jobs.*, users.company_name 
+        SELECT jobs.*, users.company_name, users.company_site 
         FROM jobs 
         LEFT JOIN users ON jobs.user_id = users.id 
         WHERE jobs.id = ?
@@ -105,7 +105,11 @@ if ($job_id > 0) {
    							 <?php echo 'Apply Submission'; ?>
 							</a>					
 
-							<a href="https://www.example.com/" target="_blank">example.com</a>
+							<?php if (!empty($job['company_site'])): ?>
+								<a href="<?= htmlspecialchars($job['company_site']) ?>" target="_blank">
+									<?= parse_url($job['company_site'], PHP_URL_HOST) ?: 'Company Website' ?>
+								</a>
+							<?php endif; ?>
 						</aside>
 					</div>
 					<?php else: ?>
