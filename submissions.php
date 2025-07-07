@@ -33,6 +33,7 @@ include 'header.php';
 include 'auth-user.php';
 include 'vertical-navbar.php';
 include 'pagination.php';
+include 'submission-details-popup.php';
 
 // Pagination setup
 $items_per_page = 5;
@@ -44,16 +45,25 @@ $offset = ($page - 1) * $items_per_page;
 // Fetch submissions for current page
 $submissions = [];
 $stmt = $connection->prepare("
-    SELECT u.first_name, u.last_name
+    SELECT a.id, u.first_name, u.last_name, u.email, u.phone_number, a.message, a.cv_file_path, a.applied_at
     FROM apply_submissions a
     JOIN users u ON a.user_id = u.id
     LIMIT ? OFFSET ?
 ");
 $stmt->bind_param("ii", $items_per_page, $offset);
 $stmt->execute();
-$stmt->bind_result($fname, $lname);
+$stmt->bind_result($id, $fname, $lname, $email, $phone, $message, $cv, $applied_at);
 while ($stmt->fetch()) {
-    $submissions[] = ['first_name' => $fname, 'last_name' => $lname];
+    $submissions[] = [
+        'id' => $id,
+        'first_name' => $fname,
+        'last_name' => $lname,
+        'email' => $email,
+        'phone' => $phone,
+        'message' => $message,
+        'cv' => $cv,
+        'applied_at' => $applied_at
+    ];
 }
 $stmt->close();
 ?>
@@ -153,7 +163,14 @@ $stmt->close();
 									<span class="name">
 										<?= htmlspecialchars($submission['first_name']) ?> <?= htmlspecialchars($submission['last_name']) ?>
 									</span>
-									<button class="view-btn">View</button>
+									<button class="view-btn"
+										data-name="<?= htmlspecialchars($submission['first_name'] . ' ' . $submission['last_name'], ENT_QUOTES) ?>"
+										data-email="<?= htmlspecialchars($submission['email'], ENT_QUOTES) ?>"
+										data-phone="<?= htmlspecialchars($submission['phone'], ENT_QUOTES) ?>"
+										data-date="<?= htmlspecialchars($submission['applied_at'], ENT_QUOTES) ?>"
+										data-cv="<?= htmlspecialchars($submission['cv'], ENT_QUOTES) ?>"
+										data-cover="<?= htmlspecialchars($submission['message'], ENT_QUOTES) ?>"
+									>View</button>
 								</div>
 							<?php endforeach; ?>
 						<?php else: ?>
@@ -171,5 +188,23 @@ $stmt->close();
 		</main>
 	</div>
 	<script src="main.js"></script>
+	<script>
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.view-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const sub = {
+        name: btn.getAttribute('data-name'),
+        email: btn.getAttribute('data-email'),
+        phone: btn.getAttribute('data-phone'),
+        date: btn.getAttribute('data-date'),
+        cv: btn.getAttribute('data-cv'),
+        cover: btn.getAttribute('data-cover'),
+      };
+      openSubmissionDetailsModal(sub);
+    });
+  });
+});
+</script>
 </body>
 </html>
