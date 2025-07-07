@@ -59,8 +59,11 @@ if (!$user_id) {
 
 $job_title = $_POST['job-title'] ?? null;
 $location = $_POST['location'] ?? null;
-$salary = $_POST['salary'] ?? null;
+$salary_raw = $_POST['salary'] ?? null;
+$salary = str_replace(' ', '', trim($salary_raw));
 $description = $_POST['description'] ?? null;
+$created_at = date('Y-m-d H:i:s');
+
 
 
 
@@ -77,13 +80,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($salary == null) {
         $error_message = 'Salary is required';
     } //Check if $job_title is made only out of letters
-	elseif(filter_var(!ctype_alpha($job_title))){
-		$error_message = "Job title should only be made by letters";
-	 }  //Check if $salary is made only out of numbers
+	elseif (!preg_match('/^[a-zA-Z\s\-]+$/', $job_title)) {
+		$error_message = "Job title should only contain letters, spaces, or hyphens.";
+	} //Check if $salary is made only out of numbers
 	elseif(filter_var($salary, FILTER_VALIDATE_INT) == false){
 		$error_message = "Salary should only be made by numbers";
 	} elseif ($salary && $location && $job_title) {
-        $sql = "INSERT INTO jobs (title, location, salary, description, user_id) VALUES ('$job_title', '$location', '$salary', '$description', '$user_id')";
+        $sql = "INSERT INTO jobs (title, location, salary, description, user_id, created_at) VALUES ('$job_title', '$location', '$salary', '$description', '$user_id', '$created_at')";
         if (mysqli_query($connection, $sql)) {
             $success_message = 'Job created SUCCESSFULLY, waiting for approval';
             // Clear form data only after successful submission
