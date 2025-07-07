@@ -37,7 +37,6 @@ $stmt->close();
 
 		// Get job_id from query param
 		$job_id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
-		echo "$job_id";
 		$job = null;
 
 		if ($job_id > 0) {
@@ -122,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 					<div class="flex-container centered-vertically centered-horizontally">
 						<div class="form-box box-shadow">
 							<div class="section-heading">
-								<h2 class="heading-title">Submit application to Company Name</h2>
+								<h2 class="heading-title">Submit application to <?php echo htmlspecialchars($job['title']); ?> </h2>
 							</div>
 
 							<form method="POST" enctype="multipart/form-data" action="">

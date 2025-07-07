@@ -1,14 +1,28 @@
-document.addEventListener('DOMContentLoaded', function() {
-            // 🔹 Job name click: redirect with ?job=...
-        document.querySelectorAll('.job-title a').forEach(function(link) {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const jobName = link.textContent.trim();
-                window.location.href = `single.php?job=${encodeURIComponent(jobName)}`;
-            });
+document.addEventListener('DOMContentLoaded', function () {
+    // 🔹 Job name click: redirect with ?job=...
+    document.querySelectorAll('.job-title a').forEach(function (link) {
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+            const jobName = link.textContent.trim();
+            window.location.href = `single.php?job=${encodeURIComponent(jobName)}`;
         });
+    });
 
-    // Ensure modal HTML exists
+    // ✅ DO NOT intercept apply button — let href work normally
+    // If absolutely needed, use this for debugging:
+    const applyBtn = document.querySelector('.button.button-wide');
+    if (applyBtn) {
+        applyBtn.addEventListener('click', function (e) {
+            const href = applyBtn.getAttribute('href');
+            if (!href || !href.includes('apply-submission.php')) {
+                e.preventDefault();
+                alert('Apply button is missing a valid link!');
+            }
+            // Otherwise: do nothing — browser follows the link normally
+        });
+    }
+
+    // 🗺️ Ensure Google Maps modal exists
     function ensureMapsModal() {
         if (!document.getElementById('maps-modal')) {
             const modal = document.createElement('div');
@@ -36,8 +50,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     ensureMapsModal();
 
-    // Convert .job-location to <a> if needed
-    document.querySelectorAll('.job-location').forEach(function(loc) {
+    // 📍 Convert .job-location spans to <a>
+    document.querySelectorAll('.job-location').forEach(function (loc) {
         if (loc.tagName !== 'A') {
             const locationText = loc.textContent.trim();
             const a = document.createElement('a');
@@ -49,9 +63,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Add map modal click to all .job-location links
-    document.querySelectorAll('.job-location').forEach(function(loc) {
-        loc.addEventListener('click', function(e) {
+    // 📍 Map modal click for .job-location links
+    document.querySelectorAll('.job-location').forEach(function (loc) {
+        loc.addEventListener('click', function (e) {
             e.preventDefault();
             const location = loc.textContent.trim();
             const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
@@ -65,18 +79,19 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Modal close logic
+    // ❌ Close modal logic
     const modal = document.getElementById('maps-modal');
     const iframe = document.getElementById('maps-iframe');
     const closeBtn = document.getElementById('close-maps-modal');
     if (closeBtn) {
-        closeBtn.addEventListener('click', function() {
+        closeBtn.addEventListener('click', function () {
             modal.style.display = 'none';
             iframe.src = '';
         });
     }
+
     if (modal) {
-        modal.addEventListener('click', function(e) {
+        modal.addEventListener('click', function (e) {
             if (e.target === modal) {
                 modal.style.display = 'none';
                 iframe.src = '';
@@ -84,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Show job name from query string on single.php
+    // 🔍 Show job name on single.php
     if (window.location.pathname.endsWith('single.php')) {
         const params = new URLSearchParams(window.location.search);
         const jobName = params.get('job');
@@ -94,13 +109,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Universal search
+    // 🔎 Universal search
     const searchInput = document.querySelector('.search-form-input');
     const jobsList = document.querySelector('.jobs-listing');
     if (searchInput && jobsList) {
-        searchInput.addEventListener('input', function() {
+        searchInput.addEventListener('input', function () {
             const query = searchInput.value.trim().toLowerCase();
-            jobsList.querySelectorAll('.job-card').forEach(function(card) {
+            jobsList.querySelectorAll('.job-card').forEach(function (card) {
                 const title = card.querySelector('.job-title')?.textContent?.toLowerCase() || '';
                 const company = card.querySelector('.meta-company')?.textContent?.toLowerCase() || '';
                 const location = card.querySelector('.job-location')?.textContent?.toLowerCase() || '';
@@ -110,37 +125,37 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Collapsible vertical menu
+    // 📚 Collapsible footer menu
     const menu = document.querySelector('.footer-vertical-menu');
     const toggleBtn = document.querySelector('.footer-vertical-menu .menu-toggle-arrow');
     if (menu && toggleBtn) {
-        toggleBtn.addEventListener('click', function() {
+        toggleBtn.addEventListener('click', function () {
             menu.classList.toggle('collapsed');
         });
     }
 });
 
-// Vertical navbar toggling
-window.addEventListener('DOMContentLoaded', function() {
+// 🍔 Vertical navbar
+window.addEventListener('DOMContentLoaded', function () {
     const menuBtn = document.getElementById('menu-toggle-btn');
     const verticalNavbar = document.getElementById('vertical-navbar');
     const closeBtn = document.getElementById('close-vertical-navbar');
 
     if (menuBtn && verticalNavbar) {
-        menuBtn.addEventListener('click', function(e) {
+        menuBtn.addEventListener('click', function (e) {
             e.stopPropagation();
             verticalNavbar.classList.add('open');
         });
     }
 
     if (closeBtn && verticalNavbar) {
-        closeBtn.addEventListener('click', function(e) {
+        closeBtn.addEventListener('click', function (e) {
             e.stopPropagation();
             verticalNavbar.classList.remove('open');
         });
     }
 
-    document.addEventListener('click', function(event) {
+    document.addEventListener('click', function (event) {
         if (
             verticalNavbar &&
             verticalNavbar.classList.contains('open') &&

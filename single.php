@@ -100,10 +100,10 @@ if ($job_id > 0) {
 								</div>
 							</div>
 
-							<!-- ✅ This link is correct and will pass the ID via GET -->
-							<a href="apply-submission.php?id=<?php echo $job['id']; ?>" class="button button-wide">Apply now</a>
-							<!-- ✅ Debug: Show ID -->
-							<p style="margin-top: 1em;">Job ID: <?php echo $job['id']; ?></p>
+
+							<a href="apply-submission.php?id=<?php echo $job['id']; ?>" class="blue-apply-button">
+   							 <?php echo 'Apply Submission'; ?>
+							</a>					
 
 							<a href="https://www.example.com/" target="_blank">example.com</a>
 						</aside>
@@ -128,3 +128,28 @@ if ($job_id > 0) {
 	</div>
 </body>
 </html>
+
+
+<style>
+.blue-apply-button {
+    display: inline-block;
+    padding: 0.9em 2em;
+    font-size: 1.1rem;
+    font-weight: 600;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #fff;
+    background: linear-gradient(145deg, #007bff, #00bfff);
+    border: 2px solid #cce7ff;
+    border-radius: 15px;
+    box-shadow: 0 0 12px rgba(0, 123, 255, 0.6);
+    text-decoration: none;
+    transition: all 0.3s ease-in-out;
+}
+
+.blue-apply-button:hover {
+    background: linear-gradient(145deg, #00aaff, #0088ff);
+    color: #f0f8ff;
+    transform: scale(1.08);
+    box-shadow: 0 0 20px rgba(0, 136, 255, 0.8);
+}
+</style>
