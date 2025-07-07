@@ -53,6 +53,9 @@ $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $total_items_result = mysqli_query($connection, "SELECT COUNT(*) FROM jobs");
 $total_items = mysqli_fetch_row($total_items_result)[0];
 $offset = ($page - 1) * $items_per_page;
+$total_items_result = mysqli_query($connection, "SELECT COUNT(*) FROM jobs");
+$total_items = mysqli_fetch_row($total_items_result)[0];
+echo "Total items: $total_items";
 
 // Fetch jobs for current page
 $jobs_result = mysqli_query($connection, "SELECT * FROM jobs LIMIT $items_per_page OFFSET $offset");
@@ -123,42 +126,42 @@ while ($job = mysqli_fetch_assoc($jobs_result)):
         $company = $company_row['company_name'];
     }
 ?>
-    <li class="job-card" 
-        data-title="<?= htmlspecialchars($job['title'], ENT_QUOTES) ?>"
-        data-company="<?= htmlspecialchars($company, ENT_QUOTES) ?>"
-        data-location="<?= htmlspecialchars($job['location'], ENT_QUOTES) ?>"
-        data-salary="<?= htmlspecialchars($job['salary'], ENT_QUOTES) ?>"
-        data-description="<?= htmlspecialchars($job['description'], ENT_QUOTES) ?>"
-        data-created_at="<?= htmlspecialchars($job['created_at'], ENT_QUOTES) ?>"
-        data-approved="<?= $job['approved'] ? '1' : '0' ?>"
-        style="cursor:pointer;"
-    >
-        <div class="job-primary">
-            <h2 class="job-title"><?= htmlspecialchars($job['title']) ?></h2>
-            <div class="job-meta">
-                <span class="meta-company">User ID: <?= htmlspecialchars($job['user_id']) ?></span>
-            </div>
-            <div class="job-details">
-                <span class="job-location">Location: <?= htmlspecialchars($job['location']) ?></span>
-                <span class="job-salary">Salary: <?= htmlspecialchars($job['salary']) ?></span>
-            </div>
-        </div>
-        <div class="job-secondary">
-            <?php if (!$job['approved']): ?>
-                <form method="POST" style="display:inline;">
-                    <input type="hidden" name="approve_job_id" value="<?= $job['id'] ?>">
-                    <button type="submit" class="btn-approve">Approve</button>
-                </form>
-                <form method="POST" style="display:inline;">
-                    <input type="hidden" name="reject_job_id" value="<?= $job['id'] ?>">
-                    <button type="submit" class="btn-reject">Reject</button>
-                </form>
-            <?php else: ?>
-                <span class="approved-label">Approved</span>
-            <?php endif; ?>
-        </div>
-    </li>
-<?php endwhile; ?>
+						<li class="job-card" 
+							data-title="<?= htmlspecialchars($job['title'], ENT_QUOTES) ?>"
+							data-company="<?= htmlspecialchars($company, ENT_QUOTES) ?>"
+							data-location="<?= htmlspecialchars($job['location'], ENT_QUOTES) ?>"
+							data-salary="<?= htmlspecialchars($job['salary'], ENT_QUOTES) ?>"
+							data-description="<?= htmlspecialchars($job['description'], ENT_QUOTES) ?>"
+							data-created_at="<?= htmlspecialchars($job['created_at'], ENT_QUOTES) ?>"
+							data-approved="<?= $job['approved'] ? '1' : '0' ?>"
+							style="cursor:pointer;"
+						>
+							<div class="job-primary">
+								<h2 class="job-title"><?= htmlspecialchars($job['title']) ?></h2>
+								<div class="job-meta">
+									<span class="meta-company">User ID: <?= htmlspecialchars($job['user_id']) ?></span>
+								</div>
+								<div class="job-details">
+									<span class="job-location">Location: <?= htmlspecialchars($job['location']) ?></span>
+									<span class="job-salary">Salary: <?= htmlspecialchars($job['salary']) ?></span>
+								</div>
+							</div>
+							<div class="job-secondary">
+								<?php if (!$job['approved']): ?>
+									<form method="POST" style="display:inline;">
+										<input type="hidden" name="approve_job_id" value="<?= $job['id'] ?>">
+										<button type="submit" class="btn-approve">Approve</button>
+									</form>
+									<form method="POST" style="display:inline;">
+										<input type="hidden" name="reject_job_id" value="<?= $job['id'] ?>">
+										<button type="submit" class="btn-reject">Reject</button>
+									</form>
+								<?php else: ?>
+									<span class="approved-label">Approved</span>
+								<?php endif; ?>
+							</div>
+						</li>
+					<?php endwhile; ?>
 					</ul>
 					<?php render_pagination($total_items, $items_per_page, $page, basename($_SERVER['PHP_SELF'])); ?>
 				</div>
