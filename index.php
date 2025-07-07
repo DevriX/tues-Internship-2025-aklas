@@ -86,11 +86,26 @@ include 'vertical-navbar.php';
 
 					<ul class="jobs-listing">
 							<?php
+							// 1. Set items per page
+							$items_per_page = 5;
+
+							// 2. Get current page from query string
+							$current_page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+
+							// 3. Count total jobs (approved)
+							$total_items_result = mysqli_query($connection, "SELECT COUNT(*) FROM jobs WHERE approved = 1");
+							$total_items = mysqli_fetch_row($total_items_result)[0];
+
+							// 4. Calculate offset for SQL
+							$offset = ($current_page - 1) * $items_per_page;
+
+							// 5. Fetch jobs for current page
 							$sql = "SELECT jobs.*, users.company_name
 									FROM jobs
 									LEFT JOIN users ON jobs.user_id = users.id
 									WHERE jobs.approved = 1
-									ORDER BY jobs.id DESC";
+									ORDER BY jobs.id DESC
+									LIMIT $items_per_page OFFSET $offset";
 							$result = mysqli_query($connection, $sql);
 							if ($result && mysqli_num_rows($result) > 0) {
 								while ($job = mysqli_fetch_assoc($result)) {
@@ -130,15 +145,14 @@ include 'vertical-navbar.php';
 							?>
 					</ul>
 
-					<div class="jobs-pagination-wrapper">
-						<div class="nav-links"> 
-							<a class="page-numbers current">1</a> 
-							<a class="page-numbers">2</a> 
-							<a class="page-numbers">3</a> 
-							<a class="page-numbers">4</a> 
-							<a class="page-numbers">5</a> 
-						</div>
-					</div>
+					<?php
+					// 6. Set base URL (without page param)
+					$base_url = 'index.php';
+
+					// 7. Include and render pagination
+					include 'pagination.php';
+					render_pagination($total_items, $items_per_page, $current_page, $base_url, 'page');
+					?>
 				</div>
 			</section>	
 		</main>

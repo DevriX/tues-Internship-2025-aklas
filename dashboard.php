@@ -45,31 +45,20 @@ if (!$user_logged_in) {
 
 include 'header.php';
 include 'vertical-navbar.php';
+include 'pagination.php';
+
+// Pagination setup
+$items_per_page = 5;
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$total_items_result = mysqli_query($connection, "SELECT COUNT(*) FROM jobs");
+$total_items = mysqli_fetch_row($total_items_result)[0];
+$offset = ($page - 1) * $items_per_page;
+
+
+// Fetch jobs for current page
+$jobs_result = mysqli_query($connection, "SELECT * FROM jobs LIMIT $items_per_page OFFSET $offset");
+include 'job-details-popup.php';
 ?>
-
-<?php
-require_once 'dbconn.php';
-include 'auth-user.php';
-
-// Handle Approve/Reject actions
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['approve_job_id'])) {
-        $job_id = intval($_POST['approve_job_id']);
-        mysqli_query($connection, "UPDATE jobs SET approved = 1 WHERE id = $job_id");
-    } elseif (isset($_POST['reject_job_id'])) {
-        $job_id = intval($_POST['reject_job_id']);
-        mysqli_query($connection, "DELETE FROM jobs WHERE id = $job_id");
-    }
-}
-
-$user_logged_in = false;
-$display_name = '';
-$current_page = basename($_SERVER['PHP_SELF']);
-if ($current_page !== 'register.php' && $current_page !== 'login.php'):
-include 'vertical-navbar.php';
-?>
-
-<?php endif; ?> 
 
 <!DOCTYPE html>
 <html lang="en">
@@ -123,14 +112,28 @@ include 'vertical-navbar.php';
 					</div>
 					<ul class="jobs-listing">
 <?php
-// Fetch all jobs for dashboard
-$jobs_result = mysqli_query($connection, "SELECT * FROM jobs");
 while ($job = mysqli_fetch_assoc($jobs_result)):
     if (empty($job['title']) || empty($job['location']) || empty($job['salary'])) {
         continue;
     }
+    // Fetch company name for this job (if needed)
+    $company = '';
+    $user_id = intval($job['user_id']);
+    $company_query = mysqli_query($connection, "SELECT company_name FROM users WHERE id = $user_id LIMIT 1");
+    if ($company_row = mysqli_fetch_assoc($company_query)) {
+        $company = $company_row['company_name'];
+    }
 ?>
-						<li class="job-card">
+						<li class="job-card" 
+							data-title="<?= htmlspecialchars($job['title'], ENT_QUOTES) ?>"
+							data-company="<?= htmlspecialchars($company, ENT_QUOTES) ?>"
+							data-location="<?= htmlspecialchars($job['location'], ENT_QUOTES) ?>"
+							data-salary="<?= htmlspecialchars($job['salary'], ENT_QUOTES) ?>"
+							data-description="<?= htmlspecialchars($job['description'], ENT_QUOTES) ?>"
+							data-created_at="<?= htmlspecialchars($job['created_at'], ENT_QUOTES) ?>"
+							data-approved="<?= $job['approved'] ? '1' : '0' ?>"
+							style="cursor:pointer;"
+						>
 							<div class="job-primary">
 								<h2 class="job-title"><?= htmlspecialchars($job['title']) ?></h2>
 								<div class="job-meta">
@@ -145,28 +148,20 @@ while ($job = mysqli_fetch_assoc($jobs_result)):
 								<?php if (!$job['approved']): ?>
 									<form method="POST" style="display:inline;">
 										<input type="hidden" name="approve_job_id" value="<?= $job['id'] ?>">
-										<button type="submit">Approve</button>
+										<button type="submit" class="btn-approve">Approve</button>
 									</form>
 									<form method="POST" style="display:inline;">
 										<input type="hidden" name="reject_job_id" value="<?= $job['id'] ?>">
-										<button type="submit">Reject</button>
+										<button type="submit" class="btn-reject">Reject</button>
 									</form>
 								<?php else: ?>
 									<span class="approved-label">Approved</span>
 								<?php endif; ?>
 							</div>
 						</li>
-<?php endwhile; ?>
+					<?php endwhile; ?>
 					</ul>
-					<div class="jobs-pagination-wrapper">
-						<div class="nav-links"> 
-							<a class="page-numbers current">1</a> 
-							<a class="page-numbers">2</a> 
-							<a class="page-numbers">3</a> 
-							<a class="page-numbers">4</a> 
-							<a class="page-numbers">5</a> 
-						</div>
-					</div>
+					<?php render_pagination($total_items, $items_per_page, $page, basename($_SERVER['PHP_SELF'])); ?>
 				</div>
 			</section>
 		</main>
@@ -181,5 +176,25 @@ while ($job = mysqli_fetch_assoc($jobs_result)):
 		</div>
 	</div>
 <script src="main.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.job-card').forEach(function(card) {
+    card.addEventListener('click', function(e) {
+      // Prevent opening modal if clicking on approve/reject buttons
+      if (e.target.closest('form')) return;
+      const job = {
+        title: card.getAttribute('data-title'),
+        company: card.getAttribute('data-company'),
+        location: card.getAttribute('data-location'),
+        salary: card.getAttribute('data-salary'),
+        description: card.getAttribute('data-description'),
+        created_at: card.getAttribute('data-created_at'),
+        approved: card.getAttribute('data-approved') === '1',
+      };
+      openJobDetailsModal(job);
+    });
+  });
+});
+</script>
 </body>
 </html>
