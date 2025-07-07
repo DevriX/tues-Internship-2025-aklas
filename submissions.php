@@ -32,17 +32,26 @@ if (isset($_COOKIE['login_token'])) {
 include 'header.php';
 include 'auth-user.php';
 include 'vertical-navbar.php';
+include 'pagination.php';
 
-// Fetch submissions
+// Pagination setup
+$items_per_page = 5;
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$total_items_result = mysqli_query($connection, "SELECT COUNT(*) FROM apply_submissions");
+$total_items = mysqli_fetch_row($total_items_result)[0];
+$offset = ($page - 1) * $items_per_page;
+
+// Fetch submissions for current page
 $submissions = [];
 $stmt = $connection->prepare("
     SELECT u.first_name, u.last_name
     FROM apply_submissions a
     JOIN users u ON a.user_id = u.id
+    LIMIT ? OFFSET ?
 ");
+$stmt->bind_param("ii", $items_per_page, $offset);
 $stmt->execute();
 $stmt->bind_result($fname, $lname);
-
 while ($stmt->fetch()) {
     $submissions[] = ['first_name' => $fname, 'last_name' => $lname];
 }
@@ -154,11 +163,7 @@ $stmt->close();
 
 					<div class="jobs-pagination-wrapper">
 						<div class="nav-links"> 
-							<a class="page-numbers current">1</a> 
-							<a class="page-numbers">2</a> 
-							<a class="page-numbers">3</a> 
-							<a class="page-numbers">4</a> 
-							<a class="page-numbers">5</a> 
+							<?php render_pagination($total_items, $items_per_page, $page, basename($_SERVER['PHP_SELF'])); ?>
 						</div>
 					</div>
 				</div>

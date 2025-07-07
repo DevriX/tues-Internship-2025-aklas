@@ -104,6 +104,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_category_id'], $
 
 include 'header.php';
 include 'vertical-navbar.php';
+include 'pagination.php';
+
+// Pagination setup
+$items_per_page = 5;
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$total_items_result = mysqli_query($connection, "SELECT COUNT(*) FROM categories");
+$total_items = mysqli_fetch_row($total_items_result)[0];
+$offset = ($page - 1) * $items_per_page;
+
+// Fetch categories for current page
+$categories = mysqli_query($connection, "SELECT * FROM categories ORDER BY name ASC LIMIT $items_per_page OFFSET $offset");
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -154,7 +165,6 @@ include 'vertical-navbar.php';
 					</div>
 					<ul class="jobs-listing">
 <?php
-$categories = mysqli_query($connection, 'SELECT * FROM categories ORDER BY name ASC');
 while ($cat = mysqli_fetch_assoc($categories)):
 ?>
 						<li class="job-card">
@@ -182,15 +192,7 @@ while ($cat = mysqli_fetch_assoc($categories)):
 						</li>
 					<?php endwhile; ?>
 					</ul>
-					<div class="jobs-pagination-wrapper">
-						<div class="nav-links">
-							<a class="page-numbers current">1</a>
-							<a class="page-numbers">2</a>
-							<a class="page-numbers">3</a>
-							<a class="page-numbers">4</a>
-							<a class="page-numbers">5</a>
-						</div>
-					</div>
+					<?php render_pagination($total_items, $items_per_page, $page, basename($_SERVER['PHP_SELF'])); ?>
 				</div>
 			</section>
 		</main>

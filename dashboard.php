@@ -45,31 +45,18 @@ if (!$user_logged_in) {
 
 include 'header.php';
 include 'vertical-navbar.php';
+include 'pagination.php';
+
+// Pagination setup
+$items_per_page = 5;
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$total_items_result = mysqli_query($connection, "SELECT COUNT(*) FROM jobs");
+$total_items = mysqli_fetch_row($total_items_result)[0];
+$offset = ($page - 1) * $items_per_page;
+
+// Fetch jobs for current page
+$jobs_result = mysqli_query($connection, "SELECT * FROM jobs LIMIT $items_per_page OFFSET $offset");
 ?>
-
-<?php
-require_once 'dbconn.php';
-include 'auth-user.php';
-
-// Handle Approve/Reject actions
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['approve_job_id'])) {
-        $job_id = intval($_POST['approve_job_id']);
-        mysqli_query($connection, "UPDATE jobs SET approved = 1 WHERE id = $job_id");
-    } elseif (isset($_POST['reject_job_id'])) {
-        $job_id = intval($_POST['reject_job_id']);
-        mysqli_query($connection, "DELETE FROM jobs WHERE id = $job_id");
-    }
-}
-
-$user_logged_in = false;
-$display_name = '';
-$current_page = basename($_SERVER['PHP_SELF']);
-if ($current_page !== 'register.php' && $current_page !== 'login.php'):
-include 'vertical-navbar.php';
-?>
-
-<?php endif; ?> 
 
 <!DOCTYPE html>
 <html lang="en">
@@ -123,8 +110,6 @@ include 'vertical-navbar.php';
 					</div>
 					<ul class="jobs-listing">
 <?php
-// Fetch all jobs for dashboard
-$jobs_result = mysqli_query($connection, "SELECT * FROM jobs");
 while ($job = mysqli_fetch_assoc($jobs_result)):
     if (empty($job['title']) || empty($job['location']) || empty($job['salary'])) {
         continue;
@@ -158,15 +143,7 @@ while ($job = mysqli_fetch_assoc($jobs_result)):
 						</li>
 <?php endwhile; ?>
 					</ul>
-					<div class="jobs-pagination-wrapper">
-						<div class="nav-links"> 
-							<a class="page-numbers current">1</a> 
-							<a class="page-numbers">2</a> 
-							<a class="page-numbers">3</a> 
-							<a class="page-numbers">4</a> 
-							<a class="page-numbers">5</a> 
-						</div>
-					</div>
+					<?php render_pagination($total_items, $items_per_page, $page, basename($_SERVER['PHP_SELF'])); ?>
 				</div>
 			</section>
 		</main>
