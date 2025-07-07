@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = 'apply-submission.php';
         });
     }
+    
 
     // Ensure modal HTML exists in the document
     function ensureMapsModal() {
@@ -141,6 +142,71 @@ document.addEventListener('DOMContentLoaded', function() {
             menu.classList.toggle('collapsed');
         });
     }
+
+    // Category tags overflow logic for index.php
+    const tagsList = document.getElementById('category-tags-list');
+    const showMoreLi = tagsList.querySelector('.show-more-li');
+    function checkOverflow() {
+        if (!tagsList || !showMoreLi) return;
+        showMoreLi.style.display = 'none';
+        const items = Array.from(tagsList.querySelectorAll('.list-item:not(.show-more-li)'));
+        if (items.length < 1) return;
+        let firstTop = items[0].offsetTop;
+        let secondLineTop = null;
+        for (let i = 1; i < items.length; i++) {
+            if (items[i].offsetTop > firstTop) {
+                secondLineTop = items[i].offsetTop;
+                break;
+            }
+        }
+        if (!secondLineTop) return;
+        let thirdLineTop = null;
+        for (let i = 1; i < items.length; i++) {
+            if (items[i].offsetTop > secondLineTop) {
+                thirdLineTop = items[i].offsetTop;
+                break;
+            }
+        }
+        if (thirdLineTop) {
+            // Hide all items that are on the third line or below
+            items.forEach(item => {
+                if (item.offsetTop >= thirdLineTop) {
+                    item.style.display = 'none';
+                } else {
+                    item.style.display = '';
+                }
+            });
+            // Insert the show-more-li after the last visible item on the second line
+            let lastSecondLineIndex = -1;
+            for (let i = items.length - 1; i >= 0; i--) {
+                if (items[i].offsetTop === secondLineTop) {
+                    lastSecondLineIndex = i;
+                    break;
+                }
+            }
+            if (lastSecondLineIndex !== -1) {
+                items[lastSecondLineIndex].after(showMoreLi);
+            } else {
+                items[items.length - 1].after(showMoreLi);
+            }
+            showMoreLi.style.display = '';
+        } else {
+            // Show all items if only two lines
+            items.forEach(item => item.style.display = '');
+            showMoreLi.style.display = 'none';
+        }
+    }
+    checkOverflow();
+    window.addEventListener('resize', checkOverflow);
+    const showMoreBtn = document.getElementById('show-more-categories');
+    if (showMoreBtn) {
+        showMoreBtn.addEventListener('click', function() {
+            // Show all items
+            const items = tagsList.querySelectorAll('.list-item');
+            items.forEach(item => item.style.display = '');
+            showMoreLi.style.display = 'none';
+        });
+    }
 });
 
 // Toggle vertical navbar from burger menu
@@ -172,4 +238,11 @@ window.addEventListener('DOMContentLoaded', function() {
       verticalNavbar.classList.remove('open');
     }
   });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Wait for layout paint
+    setTimeout(() => {
+        checkOverflow();
+    }, 100); // Delay a little to ensure layout is ready
 });

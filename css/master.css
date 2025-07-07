@@ -666,9 +666,11 @@ ul {
 }
 
 .tags-list {
+  position: relative;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
+  transition: max-height 0.3s ease;
 }
 .tags-list .list-item {
   margin-bottom: 0.5em;
@@ -1291,4 +1293,33 @@ ul {
     color: #f0f8ff;
     transform: scale(1.08);
     box-shadow: 0 0 20px rgba(0, 136, 255, 0.8);
+}
+
+#show-more-categories {
+  all: unset;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.show-more-li .list-item-link {
+  background: var(--color-muted);
+  color: var(--color-base-invert);
+  border: none;
+  border-radius: var(--border-radius-large);
+  font-size: var(--font-size-h6);
+  padding: 0.5em 1.375em;
+  height: auto;
+  width: auto;
+  min-width: 0;
+  min-height: 0;
+  box-shadow: none;
+  cursor: pointer;
+  display: inline-block;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  transition: background 0.2s;
+}
+.show-more-li .list-item-link:hover {
+  background: var(--color-muted-light);
 }

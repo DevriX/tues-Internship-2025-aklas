@@ -56,19 +56,21 @@ include 'vertical-navbar.php';
 		<main class="site-main">
 			<section class="section-fullwidth section-jobs-preview">
 				<div class="row">	
-					<ul class="tags-list">
-						<li class="list-item"><a href="#" class="list-item-link">IT</a></li>
-						<li class="list-item"><a href="#" class="list-item-link">Manufactoring</a></li>
-						<li class="list-item"><a href="#" class="list-item-link">Commerce</a></li>
-						<li class="list-item"><a href="#" class="list-item-link">Architecture</a></li>
-						<li class="list-item"><a href="#" class="list-item-link">Marketing</a></li>
+					<ul class="tags-list" id="category-tags-list" style="flex-wrap:wrap; max-height:unset; overflow:hidden; position:relative;">
+						<?php
+						$cat_result = mysqli_query($connection, 'SELECT * FROM categories ORDER BY name ASC');
+						while ($cat = mysqli_fetch_assoc($cat_result)) {
+							echo '<li class="list-item"><a href="#" class="list-item-link">' . htmlspecialchars($cat['name']) . '</a></li>';
+						}
+						?>
+						<li class="list-item show-more-li" style="display:none;"><button id="show-more-categories" class="list-item-link">+</button></li>
 					</ul>
 
 					<div class="flex-container centered-vertically">
 						<div class="search-form-wrapper">
 							<div class="search-form-field"> 
 								<input class="search-form-input" type="text" value="" placeholder="Search…" name="search"> 
-							</div> 
+							</div>
 						</div>
 						<div class="filter-wrapper">
 							<div class="filter-field-wrapper">
