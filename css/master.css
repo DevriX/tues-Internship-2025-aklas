@@ -1295,6 +1295,93 @@ ul {
     box-shadow: 0 0 20px rgba(0, 136, 255, 0.8);
 }
 
+/* --- Job Details Modal Popup --- */
+.job-details-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+.job-details-modal-content {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  padding: 32px 28px 24px 28px;
+  max-width: 800px;
+  min-width: 350px;
+  width: 95vw;
+  position: relative;
+  animation: fadeInModal 0.2s;
+  margin: 0 auto;
+}
+@media (max-width: 700px) {
+  .job-details-modal-content {
+    max-width: 98vw;
+    min-width: 0;
+    padding: 18px 6vw 18px 6vw;
+  }
+}
+@keyframes fadeInModal {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.close-job-details-modal {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #888;
+  cursor: pointer;
+  z-index: 3100;
+  transition: color 0.2s;
+}
+.close-job-details-modal:hover {
+  color: #222;
+}
+.modal-job-info p {
+  margin: 0.5em 0;
+  font-size: 1.05rem;
+}
+
+/* --- Approve/Reject Button Styles --- */
+.btn-approve {
+  background: #52c41a;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 18px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-right: 8px;
+  transition: background 0.18s, box-shadow 0.18s;
+  box-shadow: 0 2px 8px rgba(82,196,26,0.08);
+}
+.btn-approve:hover {
+  background: #389e0d;
+}
+.btn-reject {
+  background: #ff4d4f;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 18px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.18s, box-shadow 0.18s;
+  box-shadow: 0 2px 8px rgba(255,77,79,0.08);
+}
+.btn-reject:hover {
+  background: #d9363e;
+}
+
 #show-more-categories {
   all: unset;
   cursor: pointer;

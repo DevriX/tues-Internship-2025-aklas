@@ -79,6 +79,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error_message = 'Location is required';
     } elseif ($salary == null) {
         $error_message = 'Salary is required';
+    } elseif (strlen($description) > 700) {
+        $error_message = 'The description should be NO MORE than 500 symbols';
     } //Check if $job_title is made only out of letters
 	elseif (!preg_match('/^[a-zA-Z\s\-]+$/', $job_title)) {
 		$error_message = "Job title should only contain letters, spaces, or hyphens.";
