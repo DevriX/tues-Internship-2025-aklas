@@ -77,12 +77,11 @@ if ($job_id > 0) {
 									<header class="job-header">
 										<h2 class="job-title"><?php echo htmlspecialchars($job['title']); ?></h2>
 										<div class="job-meta">
-											<span class="meta-company"><?php echo htmlspecialchars($job['company_name'] ?? 'Unknown Company'); ?></span>
+											<span class="meta-company"><?php echo htmlspecialchars($job['company_name'] ?? 'No Company'); ?></span>
 											<span class="meta-date">Posted on <?php echo htmlspecialchars($job['created_at']); ?></span>
 										</div>
 										<div class="job-details">
 											<span class="job-location"><?php echo htmlspecialchars($job['location']); ?></span>
-											<span class="job-type">Job ID: <?php echo htmlspecialchars($job['id']); ?></span>
 											<span class="job-price"><?php echo htmlspecialchars($job['salary']); ?> лв.</span>
 										</div>
 									</header>
@@ -103,7 +102,7 @@ if ($job_id > 0) {
 
 							<a href="apply-submission.php?id=<?php echo $job['id']; ?>" class="blue-apply-button">
    							 <?php echo 'Apply Submission'; ?>
-							</a>					
+							</a>
 
 							<?php if (!empty($job['company_site'])): ?>
 								<a href="<?= htmlspecialchars($job['company_site']) ?>" target="_blank">
@@ -130,5 +129,6 @@ if ($job_id > 0) {
 			<a id="maps-link" href="#" target="_blank">Open in Google Maps</a>
 		</div>
 	</div>
+	<script src="main.js"></script>
 </body>
 </html>

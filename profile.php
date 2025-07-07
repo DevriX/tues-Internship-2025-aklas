@@ -7,6 +7,7 @@ $user_id = null;
 $update_success = false;
 
 $first_name = $last_name = $email = $phone = $description = $company_name = $company_site = '';
+$is_admin = 0;
 
 // Check login token
 if (isset($_COOKIE['login_token'])) {
@@ -14,7 +15,7 @@ if (isset($_COOKIE['login_token'])) {
     $token_hash = hash('sha256', $token);
 
     $stmt = $connection->prepare("
-        SELECT u.id, u.first_name, u.last_name, u.email, u.phone_number, u.description, u.company_name, u.company_site
+        SELECT u.id, u.first_name, u.last_name, u.email, u.phone_number, u.description, u.company_name, u.company_site, u.is_admin
         FROM login_tokens lt 
         JOIN users u ON lt.user_id = u.id 
         WHERE lt.token_hash = ? AND lt.expiry > NOW()
@@ -24,7 +25,7 @@ if (isset($_COOKIE['login_token'])) {
     $stmt->store_result();
 
     if ($stmt->num_rows === 1) {
-        $stmt->bind_result($user_id, $first_name, $last_name, $email, $phone, $description, $company_name, $company_site);
+        $stmt->bind_result($user_id, $first_name, $last_name, $email, $phone, $description, $company_name, $company_site, $is_admin);
         $stmt->fetch();
         $user_logged_in = true;
     }
@@ -71,10 +72,13 @@ $user = [
     'first_name' => $first_name,
     'last_name' => $last_name,
     'email' => $email,
-    // You may want to fetch is_admin if needed for the menu
+    'is_admin' => $is_admin
 ];
+$display_name = $first_name;
 $current_page = basename($_SERVER['PHP_SELF']);
+include 'header.php';
 include 'vertical-navbar.php';
+
 
 ?>
 
@@ -90,22 +94,6 @@ include 'vertical-navbar.php';
 <body>
 
 <div class="site-wrapper">
-    <header class="site-header">
-        <div class="row site-header-inner">
-            <div class="site-header-branding">
-                <h1 class="site-title"><a href="/tues-Internship-2025-aklas/index.php">Job Offers</a></h1>
-            </div>
-            <nav class="site-header-navigation">
-                <ul class="menu">
-                    <li class="menu-item"><a href="/tues-Internship-2025-aklas/index.php">Home</a></li>
-                    <li class="menu-item"><a href="/tues-Internship-2025-aklas/dashboard.php">Dashboard</a></li>
-                    <li class="menu-item current-menu-item"><a href="/tues-Internship-2025-aklas/profile.php">My Profile</a></li>
-                    <li class="menu-item"><a href="/tues-Internship-2025-aklas/logout.php">Sign Out</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
-
     <main class="site-main">
         <section class="section-fullwidth">
             <div class="row">
@@ -159,6 +147,7 @@ include 'vertical-navbar.php';
             </div>
         </section>
     </main>
+	<script src="main.js"></script>
 </div>
 
 <?php if ($update_success): ?>
