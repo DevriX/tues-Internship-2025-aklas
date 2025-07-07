@@ -30,6 +30,8 @@ if ($stmt->num_rows === 1) {
 	$stmt->bind_result($user_id, $first_name, $last_name, $email, $phone_number);
 	$stmt->fetch();
 	$user_logged_in = true;
+    $display_name = $first_name;
+
 } else {
 	die('Invalid login session.');
 }
