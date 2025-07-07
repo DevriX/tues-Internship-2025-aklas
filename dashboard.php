@@ -1,6 +1,7 @@
 <?php
 require_once 'dbconn.php';
 include 'auth-user.php';
+include 'job-listing-functions.php';
 
 // Handle Approve/Reject actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -97,7 +98,7 @@ include 'job-details-popup.php';
 									<a href="#">Jobs</a>					
 								</li>
 								<li class="menu-item">
-									<a href="#">Categories</a>
+									<a href="category-dashboard.php">Categories</a>
 								</li>
 							</ul>
 						</div>
@@ -122,55 +123,7 @@ include 'job-details-popup.php';
 						</div>
 					</div>
 					<ul class="jobs-listing">
-<?php
-while ($job = mysqli_fetch_assoc($jobs_result)):
-    if (empty($job['title']) || empty($job['location']) || empty($job['salary'])) {
-        continue;
-    }
-    // Fetch company name for this job (if needed)
-    $company = '';
-    $user_id = intval($job['user_id']);
-    $company_query = mysqli_query($connection, "SELECT company_name FROM users WHERE id = $user_id LIMIT 1");
-    if ($company_row = mysqli_fetch_assoc($company_query)) {
-        $company = $company_row['company_name'];
-    }
-?>
-						<li class="job-card" 
-							data-title="<?= htmlspecialchars($job['title'], ENT_QUOTES) ?>"
-							data-company="<?= htmlspecialchars($company, ENT_QUOTES) ?>"
-							data-location="<?= htmlspecialchars($job['location'], ENT_QUOTES) ?>"
-							data-salary="<?= htmlspecialchars($job['salary'], ENT_QUOTES) ?>"
-							data-description="<?= htmlspecialchars($job['description'], ENT_QUOTES) ?>"
-							data-created_at="<?= htmlspecialchars($job['created_at'], ENT_QUOTES) ?>"
-							data-approved="<?= $job['approved'] ? '1' : '0' ?>"
-							style="cursor:pointer;"
-						>
-							<div class="job-primary">
-								<h2 class="job-title"><?= htmlspecialchars($job['title']) ?></h2>
-								<div class="job-meta">
-									<span class="meta-company">User ID: <?= htmlspecialchars($job['user_id']) ?></span>
-								</div>
-								<div class="job-details">
-									<span class="job-location">Location: <?= htmlspecialchars($job['location']) ?></span>
-									<span class="job-salary">Salary: <?= htmlspecialchars($job['salary']) ?></span>
-								</div>
-							</div>
-							<div class="job-secondary">
-								<?php if (!$job['approved']): ?>
-									<form method="POST" style="display:inline;">
-										<input type="hidden" name="approve_job_id" value="<?= $job['id'] ?>">
-										<button type="submit" class="btn-approve">Approve</button>
-									</form>
-									<form method="POST" style="display:inline;">
-										<input type="hidden" name="reject_job_id" value="<?= $job['id'] ?>">
-										<button type="submit" class="btn-reject">Reject</button>
-									</form>
-								<?php else: ?>
-									<span class="approved-label">Approved</span>
-								<?php endif; ?>
-							</div>
-						</li>
-					<?php endwhile; ?>
+					<?php render_jobs_listing($connection, $items_per_page, $offset, $current_page); ?>
 					</ul>
 					<?php render_pagination($total_items, $items_per_page, $page, basename($_SERVER['PHP_SELF'])); ?>
 				</div>
@@ -189,10 +142,31 @@ while ($job = mysqli_fetch_assoc($jobs_result)):
 <script src="main.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+  // Location link click: open Google Maps modal, stop propagation
+  document.querySelectorAll('.job-location-link').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const location = link.getAttribute('data-location');
+      const iframe = document.getElementById('maps-iframe');
+      const modal = document.getElementById('maps-modal');
+      if (iframe && modal) {
+        iframe.src = `https://www.google.com/maps?q=${encodeURIComponent(location)}&output=embed`;
+        modal.style.display = 'flex';
+      }
+      // Optionally update the maps-link href
+      const mapsLink = document.getElementById('maps-link');
+      if (mapsLink) {
+        mapsLink.href = `https://www.google.com/maps?q=${encodeURIComponent(location)}`;
+      }
+    });
+  });
+
+  // Job card click: open job details modal
   document.querySelectorAll('.job-card').forEach(function(card) {
     card.addEventListener('click', function(e) {
-      // Prevent opening modal if clicking on approve/reject buttons
-      if (e.target.closest('form')) return;
+      // Prevent opening modal if clicking on approve/reject buttons or location link
+      if (e.target.closest('form') || e.target.classList.contains('job-location-link')) return;
       const job = {
         title: card.getAttribute('data-title'),
         company: card.getAttribute('data-company'),
