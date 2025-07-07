@@ -66,7 +66,6 @@ $user_logged_in = false;
 $display_name = '';
 $current_page = basename($_SERVER['PHP_SELF']);
 if ($current_page !== 'register.php' && $current_page !== 'login.php'):
-include 'header.php';
 include 'vertical-navbar.php';
 ?>
 
@@ -140,9 +139,6 @@ while ($job = mysqli_fetch_assoc($jobs_result)):
 								<div class="job-details">
 									<span class="job-location">Location: <?= htmlspecialchars($job['location']) ?></span>
 									<span class="job-salary">Salary: <?= htmlspecialchars($job['salary']) ?></span>
-								</div>
-								<div class="job-description">
-									<?= htmlspecialchars($job['description']) ?>
 								</div>
 							</div>
 							<div class="job-secondary">
