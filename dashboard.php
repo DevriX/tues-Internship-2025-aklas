@@ -53,9 +53,7 @@ $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $total_items_result = mysqli_query($connection, "SELECT COUNT(*) FROM jobs");
 $total_items = mysqli_fetch_row($total_items_result)[0];
 $offset = ($page - 1) * $items_per_page;
-$total_items_result = mysqli_query($connection, "SELECT COUNT(*) FROM jobs");
-$total_items = mysqli_fetch_row($total_items_result)[0];
-echo "Total items: $total_items";
+
 
 // Fetch jobs for current page
 $jobs_result = mysqli_query($connection, "SELECT * FROM jobs LIMIT $items_per_page OFFSET $offset");
