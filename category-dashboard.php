@@ -1,4 +1,8 @@
 <?php
+
+$update_error = false;
+$edit_success = false;
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -32,6 +36,71 @@ if (isset($_COOKIE['login_token'])) {
     $stmt->close();
 }
 
+// Handle Add New Category
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['new_category_name'])) {
+    $new_category = trim($_POST['new_category_name']);
+    $error = '';
+    if ($new_category !== '') {
+        // Check for duplicate (case-insensitive)
+        $stmt = $connection->prepare('SELECT COUNT(*) FROM categories WHERE LOWER(name) = LOWER(?)');
+        $stmt->bind_param('s', $new_category);
+        $stmt->execute();
+        $stmt->bind_result($count);
+        $stmt->fetch();
+        $stmt->close();
+        if ($count > 0) {
+            $error = 'Category already exists!';
+        } else {
+            $stmt = $connection->prepare('INSERT INTO categories (name) VALUES (?)');
+            $stmt->bind_param('s', $new_category);
+            $stmt->execute();
+            $stmt->close();
+            header('Location: category-dashboard.php');
+            exit;
+        }
+    }
+
+	$update_error = true;
+}
+// Handle Delete Category
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_category_id'])) {
+    $delete_id = intval($_POST['delete_category_id']);
+    $stmt = $connection->prepare('DELETE FROM categories WHERE id = ?');
+    $stmt->bind_param('i', $delete_id);
+    $stmt->execute();
+    $stmt->close();
+    header('Location: category-dashboard.php');
+    exit;
+}
+// Handle Edit Category
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_category_id'], $_POST['edit_category_name'])) {
+    $edit_id = intval($_POST['edit_category_id']);
+    $edit_name = trim($_POST['edit_category_name']);
+    $error = '';
+    if ($edit_name !== '') {
+        // Check for duplicate (case-insensitive, excluding self)
+        $stmt = $connection->prepare('SELECT COUNT(*) FROM categories WHERE LOWER(name) = LOWER(?) AND id != ?');
+        $stmt->bind_param('si', $edit_name, $edit_id);
+        $stmt->execute();
+        $stmt->bind_result($count);
+        $stmt->fetch();
+        $stmt->close();
+        if ($count > 0) {
+            $error = 'Category already exists!';
+            $update_error = true;
+        } else {
+            $stmt = $connection->prepare('UPDATE categories SET name = ? WHERE id = ?');
+            $stmt->bind_param('si', $edit_name, $edit_id);
+            $stmt->execute();
+            $stmt->close();
+            $edit_success = true;
+            // Show popup-edit after redirect
+            $_SESSION['edit_success'] = true;
+            header('Location: category-dashboard.php');
+            exit;
+        }
+    }
+}
 
 include 'header.php';
 include 'vertical-navbar.php';
@@ -42,23 +111,21 @@ include 'vertical-navbar.php';
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Jobs</title>
+	<title>Categories</title>
 	<link rel="preconnect" href="https://fonts.gstatic.com">
-
 	<link rel="stylesheet" href="./css/master.css">
 	<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
 	<div class="site-wrapper">
-
 		<main class="site-main">
 			<section class="section-fullwidth section-jobs-dashboard">
-				<div class="row">						
+				<div class="row">
 					<div class="jobs-dashboard-header">
-						<div class="primary-container">							
+						<div class="primary-container">
 							<ul class="tabs-menu">
 								<li class="menu-item">
-									<a href="#">Jobs</a>					
+									<a href="dashboard.php">Jobs</a>
 								</li>
 								<li class="menu-item current-menu-item">
 									<a href="#">Categories</a>
@@ -67,78 +134,61 @@ include 'vertical-navbar.php';
 						</div>
 						<div class="secondary-container">
 							<div class="form-box category-form">
-								<form>
-									<div class="flex-container justified-vertically">									
+								<form method="POST">
+									<div class="flex-container justified-vertically">
 										<div class="form-field-wrapper">
-											<input type="text" placeholder="Enter Category Name..."/>
+											<input type="text" name="new_category_name" placeholder="Enter Category To Create..." required/>
 										</div>
-										<button class="button">
-											Add New
-										</button>
-									</div>	
+										<button class="button" type="submit">Add New</button>
+									</div>
+									<?php if ($update_error): ?>
+										<div id="popup-error" class="popup-error" style="margin-top:10px; color:white; font-weight:bold;"> <?= htmlspecialchars($error) ?> </div>
+									<?php endif; ?>
+									<?php if (isset($_SESSION['edit_success']) && $_SESSION['edit_success']): ?>
+										<div id="popup-edit" class="popup-success" style="margin-top:10px; color:white; font-weight:bold;">Category updated successfully.</div>
+										<?php unset($_SESSION['edit_success']); ?>
+									<?php endif; ?>
 								</form>
 							</div>
 						</div>
 					</div>
 					<ul class="jobs-listing">
+<?php
+$categories = mysqli_query($connection, 'SELECT * FROM categories ORDER BY name ASC');
+while ($cat = mysqli_fetch_assoc($categories)):
+?>
 						<li class="job-card">
 							<div class="job-primary">
-								<h2 class="job-title">Category Name</h2>
+							<?php if (isset($_GET['edit']) && $_GET['edit'] == $cat['id']): ?>
+								<form method="POST" style="display:flex; align-items:center; gap:10px;">
+									<input type="hidden" name="edit_category_id" value="<?= $cat['id'] ?>" />
+									<input type="text" name="edit_category_name" value="<?= htmlspecialchars($cat['name']) ?>" required style="padding:6px 10px; border-radius:6px; border:1px solid #bbb; font-size:1.1em;" />
+									<button class="button button-inline" type="submit" style="background:#1976d2; color:#fff; border-radius:6px;">Save</button>
+									<a href="category-dashboard.php" class="button button-inline" style="background:#eee; color:#333; border-radius:6px;">Cancel</a>
+								</form>
+								<?php else: ?>
+									<h2 class="job-title" style="margin-bottom:0;"> <?= htmlspecialchars($cat['name']) ?> </h2>
+								<?php endif; ?>
 							</div>
 							<div class="job-secondary centered-content">
-								<div class="job-actions">
-									<a href="#" class="button button-inline">Delete</a>
+								<div class="job-actions" style="display:flex; gap:10px;">
+									<form method="POST" style="display:inline;">
+										<input type="hidden" name="delete_category_id" value="<?= $cat['id'] ?>" />
+										<button class="button button-inline" type="submit" style="background:#d32f2f; color:#fff; border-radius:6px;" onclick="return confirm('Delete this category?')">Delete</button>
+									</form>
+									<a href="category-dashboard.php?edit=<?= $cat['id'] ?>" class="button button-inline" style="background:#fbc02d; color:#333; border-radius:6px;">Edit</a>
 								</div>
 							</div>
 						</li>
-						<li class="job-card">
-							<div class="job-primary">
-								<h2 class="job-title">Category Name</h2>
-							</div>
-							<div class="job-secondary centered-content">
-								<div class="job-actions">
-									<a href="#" class="button button-inline">Delete</a>
-								</div>
-							</div>
-						</li>
-						<li class="job-card">
-							<div class="job-primary">
-								<h2 class="job-title">Category Name</h2>
-							</div>
-							<div class="job-secondary centered-content">
-								<div class="job-actions">
-									<a href="#" class="button button-inline">Delete</a>
-								</div>
-							</div>
-						</li>
-						<li class="job-card">
-							<div class="job-primary">
-								<h2 class="job-title">Category Name</h2>
-							</div>
-							<div class="job-secondary centered-content">
-								<div class="job-actions">
-									<a href="#" class="button button-inline">Delete</a>
-								</div>
-							</div>
-						</li>
-						<li class="job-card">
-							<div class="job-primary">
-								<h2 class="job-title">Category Name</h2>
-							</div>
-							<div class="job-secondary centered-content">
-								<div class="job-actions">
-									<a href="#" class="button button-inline">Delete</a>
-								</div>
-							</div>
-						</li>
-					</ul>					
+					<?php endwhile; ?>
+					</ul>
 					<div class="jobs-pagination-wrapper">
-						<div class="nav-links"> 
-							<a class="page-numbers current">1</a> 
-							<a class="page-numbers">2</a> 
-							<a class="page-numbers">3</a> 
-							<a class="page-numbers">4</a> 
-							<a class="page-numbers">5</a> 
+						<div class="nav-links">
+							<a class="page-numbers current">1</a>
+							<a class="page-numbers">2</a>
+							<a class="page-numbers">3</a>
+							<a class="page-numbers">4</a>
+							<a class="page-numbers">5</a>
 						</div>
 					</div>
 				</div>
@@ -146,5 +196,22 @@ include 'vertical-navbar.php';
 		</main>
 	</div>
 	<script src="main.js"></script>
+
+<?php if ($update_error): ?>
+	<script>
+		setTimeout(() => {
+			const popup = document.getElementById('popup-error');
+			if (popup) popup.classList.add('hide');
+		}, 3000);
+	</script>
+<?php endif; ?>
+<?php if (isset($edit_success) && $edit_success): ?>
+<script>
+	setTimeout(() => {
+		const popup = document.getElementById('popup-edit');
+		if (popup) popup.classList.add('hide');
+	}, 3000);
+</script>
+<?php endif; ?>
 </body>
 </html>
