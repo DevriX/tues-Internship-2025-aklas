@@ -112,9 +112,7 @@ include 'vertical-navbar.php';
 												<span class="job-location"><?php echo htmlspecialchars($job['location']); ?></span>
 												<span class="job-type">Salary: <?php echo htmlspecialchars($job['salary']); ?></span>
 											</div>
-											<div class="job-description">
-												<?php echo nl2br(htmlspecialchars($job['description'])); ?>
-											</div>
+										
 										</div>
 										<div class="job-logo">
 											<div class="job-logo-box">

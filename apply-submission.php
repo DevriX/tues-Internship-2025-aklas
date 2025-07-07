@@ -123,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 					<div class="flex-container centered-vertically centered-horizontally">
 						<div class="form-box box-shadow">
 							<div class="section-heading">
-								<h2 class="heading-title">Submit application to <?php echo htmlspecialchars($job['title']); ?> </h2>
+								<h2 class="heading-title">Submit application for <?php echo htmlspecialchars($job['title']); ?> </h2>
 							</div>
 
 							<form method="POST" enctype="multipart/form-data" action="">
