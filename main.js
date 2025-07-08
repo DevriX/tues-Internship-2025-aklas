@@ -140,6 +140,21 @@ document.addEventListener('DOMContentLoaded', function() {
             lastValue = input.value;
         });
     });
+
+    document.querySelectorAll('.view-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const cvUrl = btn.getAttribute('data-cv-url');
+            const modalCv = document.getElementById('modal-cv');
+            if (modalCv) {
+                if (cvUrl) {
+                    modalCv.innerHTML = `<a href="${cvUrl}" target="_blank">Download CV</a>`;
+                } else {
+                    modalCv.textContent = '-';
+                }
+            }
+        });
+    });
 });
 
 

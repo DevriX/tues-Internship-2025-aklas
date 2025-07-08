@@ -84,20 +84,25 @@ $check_stmt->close();
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$already_applied) {
     $message = mysqli_real_escape_string($connection, $_POST['message']);
-    $cv_file_path = null;
+    $cv_file_path = null; // Default to null
     $company_name = isset($_POST['company_name']) ? $_POST['company_name'] : null;
     $job_title = isset($_POST['job_title']) ? $_POST['job_title'] : null;
 
     // Handle file upload
     if (isset($_FILES['cv_file_path']) && $_FILES['cv_file_path']['error'] == UPLOAD_ERR_OK) {
-        $upload_dir = "/{$project_path}/uploads/";
+        $upload_dir = __DIR__ . '/uploads/';
         if (!is_dir($upload_dir)) {
             mkdir($upload_dir, 0777, true);
         }
-        $filename = basename($_FILES['cv_file_path']['name']);
-        $unique_filename = time() . '_' . bin2hex(random_bytes(4)) . '_' . $filename;
-        $cv_file_path = $upload_dir . $unique_filename;
-        move_uploaded_file($_FILES['cv_file_path']['tmp_name'], $cv_file_path);
+        $filename = time() . '_' . basename($_FILES['cv_file_path']['name']);
+        $target_path = $upload_dir . $filename;
+        $relative_path = 'uploads/' . $filename; // This is what you save in the DB
+
+        if (move_uploaded_file($_FILES['cv_file_path']['tmp_name'], $target_path)) {
+            $cv_file_path = $relative_path; // <--- THIS is what you save in the DB
+        } else {
+            // Handle error
+        }
     }
 
     // Insert application (now with company_name and job_title)
