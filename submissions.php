@@ -45,14 +45,14 @@ $offset = ($page - 1) * $items_per_page;
 // Fetch submissions for current page
 $submissions = [];
 $stmt = $connection->prepare("
-    SELECT a.id, u.first_name, u.last_name, u.email, u.phone_number, a.message, a.cv_file_path, a.applied_at
+    SELECT a.id, u.first_name, u.last_name, u.email, u.phone_number, a.message, a.cv_file_path, a.applied_at, a.company_name, a.job_title
     FROM apply_submissions a
     JOIN users u ON a.user_id = u.id
     LIMIT ? OFFSET ?
 ");
 $stmt->bind_param("ii", $items_per_page, $offset);
 $stmt->execute();
-$stmt->bind_result($id, $fname, $lname, $email, $phone, $message, $cv, $applied_at);
+$stmt->bind_result($id, $fname, $lname, $email, $phone, $message, $cv, $applied_at, $company_name, $job_title);
 while ($stmt->fetch()) {
     $submissions[] = [
         'id' => $id,
@@ -62,7 +62,9 @@ while ($stmt->fetch()) {
         'phone' => $phone,
         'message' => $message,
         'cv' => $cv,
-        'applied_at' => $applied_at
+        'applied_at' => $applied_at,
+		'company_name' => $company_name,
+		'job_title' => $job_title
     ];
 }
 $stmt->close();
@@ -169,6 +171,8 @@ $stmt->close();
 										data-phone="<?= htmlspecialchars($submission['phone'], ENT_QUOTES) ?>"
 										data-date="<?= htmlspecialchars($submission['applied_at'], ENT_QUOTES) ?>"
 										data-cv="<?= htmlspecialchars($submission['cv'], ENT_QUOTES) ?>"
+										data-company-name="<?= htmlspecialchars($submission['company_name'], ENT_QUOTES) ?>"
+										data-job-title="<?= htmlspecialchars($submission['job_title'], ENT_QUOTES) ?>"
 										data-cover="<?= htmlspecialchars($submission['message'], ENT_QUOTES) ?>"
 									>View</button>
 								</div>
@@ -199,6 +203,8 @@ document.addEventListener('DOMContentLoaded', function() {
         phone: btn.getAttribute('data-phone'),
         date: btn.getAttribute('data-date'),
         cv: btn.getAttribute('data-cv'),
+		job_title: btn.getAttribute('data-job-title'),
+		company_name: btn.getAttribute('data-company-name'),
         cover: btn.getAttribute('data-cover'),
       };
       openSubmissionDetailsModal(sub);

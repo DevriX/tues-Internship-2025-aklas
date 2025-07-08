@@ -9,6 +9,8 @@
       <p><strong>Submitted At:</strong> <span id="modal-submission-date"></span></p>
       <p><strong>CV:</strong> <span id="modal-submission-cv"></span></p>
       <p><strong>Cover Letter:</strong></p>
+      <p><strong>Position:</strong> <span id="modal-job-title"></span></p>
+      <p><strong>Company:</strong> <span id="modal-company-name"></span></p>
       <p id="modal-submission-cover"></p>
     </div>
   </div>
@@ -19,6 +21,8 @@ function openSubmissionDetailsModal(sub) {
   document.getElementById('modal-submission-email').textContent = sub.email;
   document.getElementById('modal-submission-date').textContent = sub.date;
   document.getElementById('modal-submission-cv').textContent = sub.cv;
+  document.getElementById('modal-job-title').textContent = sub.job_title;
+  document.getElementById('modal-company-name').textContent = sub.company_name;
   document.getElementById('modal-submission-cover').textContent = sub.cover;
   document.getElementById('submission-details-modal').style.display = 'block';
 }
