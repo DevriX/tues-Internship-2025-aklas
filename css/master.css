@@ -1430,3 +1430,14 @@ ul {
 #category-tags-list.expanded .show-more-li button {
   content: '-';
 }
+
+.delete-application-btn {
+  background: #e74c3c;
+  color: #fff;
+  white-space: nowrap;
+  transition: background 0.2s;
+  margin-top: 0.5rem;
+}
+.delete-application-btn:hover {
+  background: #c0392b;
+}

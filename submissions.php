@@ -78,7 +78,7 @@ $stmt->close();
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="./css/master.css">
 	<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-	<style> 
+	<style>
 	.submission-form {
 		background: linear-gradient(135deg, #d0f0ff 0%, #e6f7ff 100%);
 		padding: 2rem;
@@ -149,7 +149,7 @@ $stmt->close();
 	<div class="site-wrapper">
 		<main class="site-main">
 			<section class="section-fullwidth">
-				<div class="row">						
+				<div class="row">
 					<ul class="tabs-menu">
 						<li class="menu-item current-menu-item"><a href="#">Jobs</a></li>
 						<li class="menu-item"><a href="#">Categories</a></li>
