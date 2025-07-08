@@ -85,6 +85,8 @@ $check_stmt->close();
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$already_applied) {
     $message = mysqli_real_escape_string($connection, $_POST['message']);
     $cv_file_path = null;
+    $company_name = isset($_POST['company_name']) ? $_POST['company_name'] : null;
+    $job_title = isset($_POST['job_title']) ? $_POST['job_title'] : null;
 
     // Handle file upload
     if (isset($_FILES['cv_file_path']) && $_FILES['cv_file_path']['error'] == UPLOAD_ERR_OK) {
@@ -98,12 +100,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$already_applied) {
         move_uploaded_file($_FILES['cv_file_path']['tmp_name'], $cv_file_path);
     }
 
-    // Insert application
+    // Insert application (now with company_name and job_title)
     $sql = "INSERT INTO apply_submissions 
-        (job_id, user_id, first_name, last_name, email, phone_number, message, cv_file_path, applied_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+        (job_id, user_id, first_name, last_name, email, phone_number, message, cv_file_path, company_name, job_title, applied_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
     $stmt = $connection->prepare($sql);
-    $stmt->bind_param("iissssss", $job_id, $user_id, $first_name, $last_name, $email, $phone_number, $message, $cv_file_path);
+    $stmt->bind_param("iissssssss", $job_id, $user_id, $first_name, $last_name, $email, $phone_number, $message, $cv_file_path, $company_name, $job_title);
 
     if ($stmt->execute()) {
         $stmt->close();
@@ -149,9 +151,18 @@ include 'vertical-navbar.php';
 
                             <form method="POST" enctype="multipart/form-data" action="">
                                 <input type="hidden" name="job_id" value="<?php echo htmlspecialchars($job_id); ?>">
+                                <input type="hidden" name="company_name" value="<?php echo htmlspecialchars($job['company_name'] ?? ''); ?>">
+                                <input type="hidden" name="job_title" value="<?php echo htmlspecialchars($job['title'] ?? ''); ?>">
 
                                 <div class="flex-container justified-horizontally flex-wrap">
-
+                                    <!-- Company Name (read-only) -->
+                                    <div class="form-field-wrapper width-medium">
+                                        <input type="text" value="<?php echo htmlspecialchars($job['company_name'] ?? ''); ?>" disabled />
+                                    </div>
+                                    <!-- Job Title (read-only) -->
+                                    <div class="form-field-wrapper width-medium">
+                                        <input type="text" value="<?php echo htmlspecialchars($job['title'] ?? ''); ?>" disabled />
+                                    </div>
                                     <!-- Uneditable Inputs + Hidden Values -->
                                     <div class="form-field-wrapper width-medium">
                                         <input type="text" value="<?php echo htmlspecialchars($first_name); ?>" disabled />
@@ -169,7 +180,6 @@ include 'vertical-navbar.php';
                                         <input type="text" value="<?php echo htmlspecialchars($phone_number); ?>" disabled />
                                         <input type="hidden" name="phone_number" value="<?php echo htmlspecialchars($phone_number); ?>" />
                                     </div>
-
                                     <!-- Editable Fields -->
                                     <div class="form-field-wrapper width-large">
                                         <textarea name="message" placeholder="Custom Message*" required></textarea>
