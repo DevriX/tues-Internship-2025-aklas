@@ -62,13 +62,50 @@ include 'pagination.php';
 // Pagination setup
 $items_per_page = 5;
 $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
-$total_items_result = mysqli_query($connection, "SELECT COUNT(*) FROM jobs");
-$total_items = mysqli_fetch_row($total_items_result)[0];
-$offset = ($page - 1) * $items_per_page;
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+$category_filter = isset($_GET['category']) ? $_GET['category'] : '';
+$show_pagination = true;
+if ($category_filter) {
+    $stmt = $connection->prepare(
+        "SELECT jobs.*
+         FROM jobs
+         JOIN job_categories jc ON jobs.id = jc.job_id
+         JOIN categories c ON jc.category_id = c.id
+         WHERE LOWER(c.name) = LOWER(?)
+         ORDER BY jobs.id DESC"
+    );
+    $stmt->bind_param('s', $category_filter);
+    $stmt->execute();
+    $jobs_result = $stmt->get_result();
+    $total_items = $jobs_result->num_rows;
+    $stmt->close();
+    $show_pagination = false;
+} else if ($search !== '') {
+    $stmt = $connection->prepare(
+        "SELECT jobs.*
+         FROM jobs
+         LEFT JOIN job_categories jc ON jobs.id = jc.job_id
+         LEFT JOIN categories c ON jc.category_id = c.id
+         WHERE jobs.title LIKE CONCAT('%', ?, '%')
+            OR jobs.description LIKE CONCAT('%', ?, '%')
+            OR c.name LIKE CONCAT('%', ?, '%')
+         GROUP BY jobs.id
+         ORDER BY jobs.id DESC"
+    );
+    $stmt->bind_param('sss', $search, $search, $search);
+    $stmt->execute();
+    $jobs_result = $stmt->get_result();
+    $total_items = $jobs_result->num_rows;
+    $stmt->close();
+    $show_pagination = false;
+} else {
+    $total_items_result = mysqli_query($connection, "SELECT COUNT(*) FROM jobs");
+    $total_items = mysqli_fetch_row($total_items_result)[0];
+    $offset = ($page - 1) * $items_per_page;
+    $jobs_result = mysqli_query($connection, "SELECT * FROM jobs LIMIT $items_per_page OFFSET $offset");
+    $show_pagination = true;
+}
 
-
-// Fetch jobs for current page
-$jobs_result = mysqli_query($connection, "SELECT * FROM jobs LIMIT $items_per_page OFFSET $offset");
 include 'job-details-popup.php';
 ?>
 
@@ -104,11 +141,11 @@ include 'job-details-popup.php';
 						</div>
 						<div class="secondary-container">
 							<div class="flex-container centered-vertically">
-								<div class="search-form-wrapper">
+								<form class="search-form-wrapper" method="get" action="dashboard.php" style="display:inline;">
 									<div class="search-form-field"> 
-										<input class="search-form-input" type="text" value="" placeholder="Search…" name="search" > 
-									</div> 
-								</div>
+										<input class="search-form-input" type="text" value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>" placeholder="Search…" name="search"> 
+									</div>
+								</form>
 								<div class="filter-wrapper">
 									<div class="filter-field-wrapper">
 										<select>
@@ -123,14 +160,50 @@ include 'job-details-popup.php';
 						</div>
 					</div>
 					<ul class="jobs-listing">
-					<?php render_jobs_listing($connection, $items_per_page, $offset, $current_page); ?>
+<?php
+if ($category_filter || $search !== '') {
+    // Show jobs from $jobs_result directly
+    while ($job = $jobs_result->fetch_assoc()) {
+        if (empty($job['title']) || empty($job['location'])) continue;
+        ?>
+        <li class="job-card">
+            <div class="job-primary">
+                <h2 class="job-title">
+                    <a href="single.php?id=<?php echo $job['id']; ?>">
+                        <?php echo htmlspecialchars($job['title']); ?>
+                    </a>
+                </h2>
+                <div class="job-meta">
+                    <span class="meta-company"><?php echo htmlspecialchars($job['company_name'] ?? 'Unknown Company'); ?></span>
+                    <span class="meta-date">Posted <?php echo htmlspecialchars($job['created_at']); ?></span>
+                </div>
+                <div>
+                    <span class="category-type"><?php echo htmlspecialchars($job['category'] ?? ''); ?></span>
+                </div>
+                <div class="job-details">
+                    <span class="job-location"><?php echo htmlspecialchars($job['location']); ?></span>
+                    <span class="job-type">Salary: <?php echo htmlspecialchars($job['salary']); ?></span>
+                </div>
+            </div>
+            <div class="job-logo">
+                <div class="job-logo-box">
+                    <img src="https://i.imgur.com/ZbILm3F.png" alt="">
+                </div>
+            </div>
+        </li>
+        <?php
+    }
+} else {
+    // Use the paginated function
+    render_jobs_listing($connection, $items_per_page, $offset, $current_page);
+}
+?>
 					</ul>
-					<?php render_pagination($total_items, $items_per_page, $page, basename($_SERVER['PHP_SELF'])); ?>
+					<?php if ($show_pagination && $total_items > $items_per_page) render_pagination($total_items, $items_per_page, $page, basename($_SERVER['PHP_SELF'])); ?>
 				</div>
 			</section>
 		</main>
 	</div>
-	<script src="main.js"></script>
 	<!-- Google Maps Modal -->
 	<div id="maps-modal">
 		<div class="maps-modal-content">
