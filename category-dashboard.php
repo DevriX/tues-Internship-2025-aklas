@@ -109,12 +109,21 @@ include 'pagination.php';
 // Pagination setup
 $items_per_page = 5;
 $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
-$total_items_result = mysqli_query($connection, "SELECT COUNT(*) FROM categories");
-$total_items = mysqli_fetch_row($total_items_result)[0];
-$offset = ($page - 1) * $items_per_page;
-
-// Fetch categories for current page
-$categories = mysqli_query($connection, "SELECT * FROM categories ORDER BY name ASC LIMIT $items_per_page OFFSET $offset");
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+if ($search !== '') {
+    $stmt = $connection->prepare("SELECT * FROM categories WHERE name LIKE CONCAT('%', ?, '%') ORDER BY name ASC");
+    $stmt->bind_param('s', $search);
+    $stmt->execute();
+    $categories = $stmt->get_result();
+    $total_items = $categories->num_rows;
+    // Show all on one page, no pagination
+    $stmt->close();
+} else {
+    $total_items_result = mysqli_query($connection, "SELECT COUNT(*) FROM categories");
+    $total_items = mysqli_fetch_row($total_items_result)[0];
+    $offset = ($page - 1) * $items_per_page;
+    $categories = mysqli_query($connection, "SELECT * FROM categories ORDER BY name ASC LIMIT $items_per_page OFFSET $offset");
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -192,7 +201,7 @@ while ($cat = mysqli_fetch_assoc($categories)):
 						</li>
 					<?php endwhile; ?>
 					</ul>
-					<?php render_pagination($total_items, $items_per_page, $page, basename($_SERVER['PHP_SELF'])); ?>
+					<?php if (!$search) render_pagination($total_items, $items_per_page, $page, basename($_SERVER['PHP_SELF'])); ?>
 				</div>
 			</section>
 		</main>

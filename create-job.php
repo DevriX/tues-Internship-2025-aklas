@@ -211,6 +211,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <button onclick="saveCategories()" class="button">Save Selection</button>
     </div>
 </div>
+<script src="main.js"></script>
 
 <script>
     const modal = document.getElementById("categoryModal");

@@ -106,33 +106,33 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Universal search bar functionality for all pages
-    const searchInput = document.querySelector('.search-form-input');
-    const jobsList = document.querySelector('.jobs-listing');
-    if (searchInput && jobsList) {
-        searchInput.addEventListener('input', function() {
-            const query = searchInput.value.trim().toLowerCase();
-            let anyMatch = false;
-            jobsList.querySelectorAll('.job-card').forEach(function(card) {
-                // Try to match job title, company, and location
-                const title = card.querySelector('.job-title')?.textContent?.toLowerCase() || '';
-                const company = card.querySelector('.meta-company')?.textContent?.toLowerCase() || '';
-                const location = card.querySelector('.job-location')?.textContent?.toLowerCase() || '';
-                const match =
-                    title.includes(query) ||
-                    company.includes(query) ||
-                    location.includes(query);
-                if (query === '') {
-                    card.style.display = '';
-                    anyMatch = true;
-                } else if (match) {
-                    card.style.display = '';
-                    anyMatch = true;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        });
-    }
+    // const searchInput = document.querySelector('.search-form-input');
+    // const jobsList = document.querySelector('.jobs-listing');
+    // if (searchInput && jobsList) {
+    //     searchInput.addEventListener('input', function() {
+    //         const query = searchInput.value.trim().toLowerCase();
+    //         let anyMatch = false;
+    //         jobsList.querySelectorAll('.job-card').forEach(function(card) {
+    //             // Try to match job title, company, and location
+    //             const title = card.querySelector('.job-title')?.textContent?.toLowerCase() || '';
+    //             const company = card.querySelector('.meta-company')?.textContent?.toLowerCase() || '';
+    //             const location = card.querySelector('.job-location')?.textContent?.toLowerCase() || '';
+    //             const match =
+    //                 title.includes(query) ||
+    //                 company.includes(query) ||
+    //                 location.includes(query);
+    //             if (query === '') {
+    //                 card.style.display = '';
+    //                 anyMatch = true;
+    //             } else if (match) {
+    //                 card.style.display = '';
+    //                 anyMatch = true;
+    //             } else {
+    //                 card.style.display = 'none';
+    //             }
+    //         });
+    //     });
+    // }
 
     // Collapsible vertical menu toggle
     var menu = document.querySelector('.footer-vertical-menu');
@@ -145,59 +145,60 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Category tags overflow logic for index.php
     const tagsList = document.getElementById('category-tags-list');
-    const showMoreLi = tagsList.querySelector('.show-more-li');
-    function checkOverflow() {
-        if (!tagsList || !showMoreLi) return;
-        showMoreLi.style.display = 'none';
-        const items = Array.from(tagsList.querySelectorAll('.list-item:not(.show-more-li)'));
-        if (items.length < 1) return;
-        let firstTop = items[0].offsetTop;
-        let secondLineTop = null;
-        for (let i = 1; i < items.length; i++) {
-            if (items[i].offsetTop > firstTop) {
-                secondLineTop = items[i].offsetTop;
-                break;
-            }
-        }
-        if (!secondLineTop) return;
-        let thirdLineTop = null;
-        for (let i = 1; i < items.length; i++) {
-            if (items[i].offsetTop > secondLineTop) {
-                thirdLineTop = items[i].offsetTop;
-                break;
-            }
-        }
-        if (thirdLineTop) {
-            // Hide all items that are on the third line or below
-            items.forEach(item => {
-                if (item.offsetTop >= thirdLineTop) {
-                    item.style.display = 'none';
-                } else {
-                    item.style.display = '';
-                }
-            });
-            // Insert the show-more-li after the last visible item on the second line
-            let lastSecondLineIndex = -1;
-            for (let i = items.length - 1; i >= 0; i--) {
-                if (items[i].offsetTop === secondLineTop) {
-                    lastSecondLineIndex = i;
+    const showMoreLi = tagsList ? tagsList.querySelector('.show-more-li') : null;
+    if (tagsList && showMoreLi) {
+        function checkOverflow() {
+            showMoreLi.style.display = 'none';
+            const items = Array.from(tagsList.querySelectorAll('.list-item:not(.show-more-li)'));
+            if (items.length < 1) return;
+            let firstTop = items[0].offsetTop;
+            let secondLineTop = null;
+            for (let i = 1; i < items.length; i++) {
+                if (items[i].offsetTop > firstTop) {
+                    secondLineTop = items[i].offsetTop;
                     break;
                 }
             }
-            if (lastSecondLineIndex !== -1) {
-                items[lastSecondLineIndex].after(showMoreLi);
-            } else {
-                items[items.length - 1].after(showMoreLi);
+            if (!secondLineTop) return;
+            let thirdLineTop = null;
+            for (let i = 1; i < items.length; i++) {
+                if (items[i].offsetTop > secondLineTop) {
+                    thirdLineTop = items[i].offsetTop;
+                    break;
+                }
             }
-            showMoreLi.style.display = '';
-        } else {
-            // Show all items if only two lines
-            items.forEach(item => item.style.display = '');
-            showMoreLi.style.display = 'none';
+            if (thirdLineTop) {
+                // Hide all items that are on the third line or below
+                items.forEach(item => {
+                    if (item.offsetTop >= thirdLineTop) {
+                        item.style.display = 'none';
+                    } else {
+                        item.style.display = '';
+                    }
+                });
+                // Insert the show-more-li after the last visible item on the second line
+                let lastSecondLineIndex = -1;
+                for (let i = items.length - 1; i >= 0; i--) {
+                    if (items[i].offsetTop === secondLineTop) {
+                        lastSecondLineIndex = i;
+                        break;
+                    }
+                }
+                if (lastSecondLineIndex !== -1) {
+                    items[lastSecondLineIndex].after(showMoreLi);
+                } else {
+                    items[items.length - 1].after(showMoreLi);
+                }
+                showMoreLi.style.display = '';
+            } else {
+                // Show all items if only two lines
+                items.forEach(item => item.style.display = '');
+                showMoreLi.style.display = 'none';
+            }
         }
+        checkOverflow();
+        window.addEventListener('resize', checkOverflow);
     }
-    checkOverflow();
-    window.addEventListener('resize', checkOverflow);
     const showMoreBtn = document.getElementById('show-more-categories');
     if (showMoreBtn) {
         showMoreBtn.addEventListener('click', function() {
@@ -207,6 +208,18 @@ document.addEventListener('DOMContentLoaded', function() {
             showMoreLi.style.display = 'none';
         });
     }
+
+    // Auto-submit search form if input is cleared (becomes empty)
+    document.querySelectorAll('.search-form-input').forEach(function(input) {
+        let lastValue = input.value;
+        input.addEventListener('input', function() {
+            console.log('Input event:', lastValue, '->', input.value); // Add this line
+            if (lastValue.trim() !== '' && input.value.trim() === '') {
+                input.form.submit();
+            }
+            lastValue = input.value;
+        });
+    });
 });
 
 // Toggle vertical navbar from burger menu
@@ -243,6 +256,60 @@ window.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function() {
     // Wait for layout paint
     setTimeout(() => {
-        checkOverflow();
+        // Category tags overflow logic for index.php
+        const tagsList = document.getElementById('category-tags-list');
+        const showMoreLi = tagsList ? tagsList.querySelector('.show-more-li') : null;
+        if (tagsList && showMoreLi) {
+            function checkOverflow() {
+                showMoreLi.style.display = 'none';
+                const items = Array.from(tagsList.querySelectorAll('.list-item:not(.show-more-li)'));
+                if (items.length < 1) return;
+                let firstTop = items[0].offsetTop;
+                let secondLineTop = null;
+                for (let i = 1; i < items.length; i++) {
+                    if (items[i].offsetTop > firstTop) {
+                        secondLineTop = items[i].offsetTop;
+                        break;
+                    }
+                }
+                if (!secondLineTop) return;
+                let thirdLineTop = null;
+                for (let i = 1; i < items.length; i++) {
+                    if (items[i].offsetTop > secondLineTop) {
+                        thirdLineTop = items[i].offsetTop;
+                        break;
+                    }
+                }
+                if (thirdLineTop) {
+                    // Hide all items that are on the third line or below
+                    items.forEach(item => {
+                        if (item.offsetTop >= thirdLineTop) {
+                            item.style.display = 'none';
+                        } else {
+                            item.style.display = '';
+                        }
+                    });
+                    // Insert the show-more-li after the last visible item on the second line
+                    let lastSecondLineIndex = -1;
+                    for (let i = items.length - 1; i >= 0; i--) {
+                        if (items[i].offsetTop === secondLineTop) {
+                            lastSecondLineIndex = i;
+                            break;
+                        }
+                    }
+                    if (lastSecondLineIndex !== -1) {
+                        items[lastSecondLineIndex].after(showMoreLi);
+                    } else {
+                        items[items.length - 1].after(showMoreLi);
+                    }
+                    showMoreLi.style.display = '';
+                } else {
+                    // Show all items if only two lines
+                    items.forEach(item => item.style.display = '');
+                    showMoreLi.style.display = 'none';
+                }
+            }
+            checkOverflow();
+        }
     }, 100); // Delay a little to ensure layout is ready
 });
