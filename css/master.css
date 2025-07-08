@@ -1410,3 +1410,23 @@ ul {
 .show-more-li .list-item-link:hover {
   background: var(--color-muted-light);
 }
+
+#category-tags-list {
+  min-width: 600px;
+}
+
+.hidden-category {
+  display: none;
+}
+
+#category-tags-list.expanded .hidden-category {
+  display: inline-block;
+}
+
+.show-more-li {
+  display: none;
+}
+
+#category-tags-list.expanded .show-more-li button {
+  content: '-';
+}

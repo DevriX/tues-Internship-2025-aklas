@@ -1,14 +1,5 @@
-// For job name click on index.html
 document.addEventListener('DOMContentLoaded', function() {
-    // Job name click: go to single.html with job name in query string
-    // document.querySelectorAll('.job-title a').forEach(function(link) {
-    //     link.addEventListener('click', function(e) {
-    //         e.preventDefault();
-    //         const jobName = link.textContent.trim();
-    //     });
-    // });
-
-    // "Apply now" button click (works on any page)
+    // Apply now button
     const applyBtn = document.querySelector('.button.button-wide');
     if (applyBtn) {
         applyBtn.addEventListener('click', function(e) {
@@ -16,7 +7,6 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = 'apply-submission.php';
         });
     }
-    
 
     // Ensure modal HTML exists in the document
     function ensureMapsModal() {
@@ -43,7 +33,6 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.appendChild(modal);
         }
     }
-
     ensureMapsModal();
 
     // Convert all .job-location spans to <a> tags if not already
@@ -54,12 +43,12 @@ document.addEventListener('DOMContentLoaded', function() {
             a.href = '#';
             a.textContent = locationText;
             a.className = loc.className;
-            a.removeAttribute('style'); // Remove inline styles, let CSS handle
+            a.removeAttribute('style'); // Let CSS handle styling
             loc.replaceWith(a);
         }
     });
 
-    // Add click event to all .job-location <a> tags
+    // Add click event to all .job-location <a> tags to open modal with Google Maps iframe
     document.querySelectorAll('.job-location').forEach(function(loc) {
         loc.addEventListener('click', function(e) {
             e.preventDefault();
@@ -99,40 +88,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const params = new URLSearchParams(window.location.search);
         const jobName = params.get('job');
         if (jobName) {
-            // Find the job title and set it
             const jobTitle = document.querySelector('.job-title a');
             if (jobTitle) jobTitle.textContent = jobName;
         }
     }
-
-    // Universal search bar functionality for all pages
-    // const searchInput = document.querySelector('.search-form-input');
-    // const jobsList = document.querySelector('.jobs-listing');
-    // if (searchInput && jobsList) {
-    //     searchInput.addEventListener('input', function() {
-    //         const query = searchInput.value.trim().toLowerCase();
-    //         let anyMatch = false;
-    //         jobsList.querySelectorAll('.job-card').forEach(function(card) {
-    //             // Try to match job title, company, and location
-    //             const title = card.querySelector('.job-title')?.textContent?.toLowerCase() || '';
-    //             const company = card.querySelector('.meta-company')?.textContent?.toLowerCase() || '';
-    //             const location = card.querySelector('.job-location')?.textContent?.toLowerCase() || '';
-    //             const match =
-    //                 title.includes(query) ||
-    //                 company.includes(query) ||
-    //                 location.includes(query);
-    //             if (query === '') {
-    //                 card.style.display = '';
-    //                 anyMatch = true;
-    //             } else if (match) {
-    //                 card.style.display = '';
-    //                 anyMatch = true;
-    //             } else {
-    //                 card.style.display = 'none';
-    //             }
-    //         });
-    //     });
-    // }
 
     // Collapsible vertical menu toggle
     var menu = document.querySelector('.footer-vertical-menu');
@@ -143,77 +102,38 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Category tags overflow logic for index.php
-    const tagsList = document.getElementById('category-tags-list');
-    const showMoreLi = tagsList ? tagsList.querySelector('.show-more-li') : null;
-    if (tagsList && showMoreLi) {
-        function checkOverflow() {
-            showMoreLi.style.display = 'none';
-            const items = Array.from(tagsList.querySelectorAll('.list-item:not(.show-more-li)'));
-            if (items.length < 1) return;
-            let firstTop = items[0].offsetTop;
-            let secondLineTop = null;
-            for (let i = 1; i < items.length; i++) {
-                if (items[i].offsetTop > firstTop) {
-                    secondLineTop = items[i].offsetTop;
-                    break;
-                }
-            }
-            if (!secondLineTop) return;
-            let thirdLineTop = null;
-            for (let i = 1; i < items.length; i++) {
-                if (items[i].offsetTop > secondLineTop) {
-                    thirdLineTop = items[i].offsetTop;
-                    break;
-                }
-            }
-            if (thirdLineTop) {
-                // Hide all items that are on the third line or below
-                items.forEach(item => {
-                    if (item.offsetTop >= thirdLineTop) {
-                        item.style.display = 'none';
-                    } else {
-                        item.style.display = '';
-                    }
-                });
-                // Insert the show-more-li after the last visible item on the second line
-                let lastSecondLineIndex = -1;
-                for (let i = items.length - 1; i >= 0; i--) {
-                    if (items[i].offsetTop === secondLineTop) {
-                        lastSecondLineIndex = i;
-                        break;
-                    }
-                }
-                if (lastSecondLineIndex !== -1) {
-                    items[lastSecondLineIndex].after(showMoreLi);
-                } else {
-                    items[items.length - 1].after(showMoreLi);
-                }
-                showMoreLi.style.display = '';
-            } else {
-                // Show all items if only two lines
-                items.forEach(item => item.style.display = '');
-                showMoreLi.style.display = 'none';
-            }
-        }
-        checkOverflow();
-        window.addEventListener('resize', checkOverflow);
-    }
+    // -------------------------------
+    // CATEGORY TAGS: show more/less toggle logic
+    // -------------------------------
+    const categoryList = document.getElementById('category-tags-list');
     const showMoreBtn = document.getElementById('show-more-categories');
-    if (showMoreBtn) {
-        showMoreBtn.addEventListener('click', function() {
-            // Show all items
-            const items = tagsList.querySelectorAll('.list-item');
-            items.forEach(item => item.style.display = '');
+    const showMoreLi = categoryList ? categoryList.querySelector('.show-more-li') : null;
+    if (!categoryList || !showMoreBtn || !showMoreLi) return;
+
+    const hiddenItems = categoryList.querySelectorAll('.hidden-category');
+
+    function updateCategories() {
+        if (hiddenItems.length === 0) {
             showMoreLi.style.display = 'none';
-        });
+            return;
+        }
+        showMoreLi.style.display = 'inline-block';
+        showMoreBtn.textContent = categoryList.classList.contains('expanded') ? '−' : '+';
     }
+
+    showMoreBtn.addEventListener('click', function () {
+        categoryList.classList.toggle('expanded');
+        updateCategories();
+    });
+
+    // Initial state
+    categoryList.classList.remove('expanded');
+    updateCategories();
 
     // Auto-submit search form if input is cleared (becomes empty)
     document.querySelectorAll('.search-form-input').forEach(function(input) {
         let lastValue = input.value;
         input.addEventListener('input', function() {
-            console.log('Input event:', lastValue, '->', input.value); // Add this line
             if (lastValue.trim() !== '' && input.value.trim() === '') {
                 input.form.submit();
             }
@@ -222,94 +142,34 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+
 // Toggle vertical navbar from burger menu
 window.addEventListener('DOMContentLoaded', function() {
-  var menuBtn = document.getElementById('menu-toggle-btn');
-  var verticalNavbar = document.getElementById('vertical-navbar');
-  var closeBtn = document.getElementById('close-vertical-navbar');
+    var menuBtn = document.getElementById('menu-toggle-btn');
+    var verticalNavbar = document.getElementById('vertical-navbar');
+    var closeBtn = document.getElementById('close-vertical-navbar');
 
-  if (menuBtn && verticalNavbar) {
-    menuBtn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      verticalNavbar.classList.add('open');
-    });
-  }
-  if (closeBtn && verticalNavbar) {
-    closeBtn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      verticalNavbar.classList.remove('open');
-    });
-  }
-  // Optional: clicking outside closes the navbar
-  document.addEventListener('click', function(event) {
-    if (
-      verticalNavbar &&
-      verticalNavbar.classList.contains('open') &&
-      !verticalNavbar.contains(event.target) &&
-      event.target !== menuBtn
-    ) {
-      verticalNavbar.classList.remove('open');
+    if (menuBtn && verticalNavbar) {
+        menuBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            verticalNavbar.classList.add('open');
+        });
     }
-  });
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Wait for layout paint
-    setTimeout(() => {
-        // Category tags overflow logic for index.php
-        const tagsList = document.getElementById('category-tags-list');
-        const showMoreLi = tagsList ? tagsList.querySelector('.show-more-li') : null;
-        if (tagsList && showMoreLi) {
-            function checkOverflow() {
-                showMoreLi.style.display = 'none';
-                const items = Array.from(tagsList.querySelectorAll('.list-item:not(.show-more-li)'));
-                if (items.length < 1) return;
-                let firstTop = items[0].offsetTop;
-                let secondLineTop = null;
-                for (let i = 1; i < items.length; i++) {
-                    if (items[i].offsetTop > firstTop) {
-                        secondLineTop = items[i].offsetTop;
-                        break;
-                    }
-                }
-                if (!secondLineTop) return;
-                let thirdLineTop = null;
-                for (let i = 1; i < items.length; i++) {
-                    if (items[i].offsetTop > secondLineTop) {
-                        thirdLineTop = items[i].offsetTop;
-                        break;
-                    }
-                }
-                if (thirdLineTop) {
-                    // Hide all items that are on the third line or below
-                    items.forEach(item => {
-                        if (item.offsetTop >= thirdLineTop) {
-                            item.style.display = 'none';
-                        } else {
-                            item.style.display = '';
-                        }
-                    });
-                    // Insert the show-more-li after the last visible item on the second line
-                    let lastSecondLineIndex = -1;
-                    for (let i = items.length - 1; i >= 0; i--) {
-                        if (items[i].offsetTop === secondLineTop) {
-                            lastSecondLineIndex = i;
-                            break;
-                        }
-                    }
-                    if (lastSecondLineIndex !== -1) {
-                        items[lastSecondLineIndex].after(showMoreLi);
-                    } else {
-                        items[items.length - 1].after(showMoreLi);
-                    }
-                    showMoreLi.style.display = '';
-                } else {
-                    // Show all items if only two lines
-                    items.forEach(item => item.style.display = '');
-                    showMoreLi.style.display = 'none';
-                }
-            }
-            checkOverflow();
+    if (closeBtn && verticalNavbar) {
+        closeBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            verticalNavbar.classList.remove('open');
+        });
+    }
+    // Optional: clicking outside closes the navbar
+    document.addEventListener('click', function(event) {
+        if (
+            verticalNavbar &&
+            verticalNavbar.classList.contains('open') &&
+            !verticalNavbar.contains(event.target) &&
+            event.target !== menuBtn
+        ) {
+            verticalNavbar.classList.remove('open');
         }
-    }, 100); // Delay a little to ensure layout is ready
+    });
 });
