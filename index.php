@@ -57,18 +57,24 @@ include 'vertical-navbar.php';
 		<main class="site-main">
 			<section class="section-fullwidth section-jobs-preview">
 				<div class="row">	
-					<ul class="tags-list" id="category-tags-list" style="flex-wrap:wrap; max-height:unset; overflow:hidden; position:relative;">
-						<?php
-						$cat_result = mysqli_query($connection, 'SELECT * FROM categories ORDER BY name ASC');
-						$active_category = isset($_GET['category']) ? $_GET['category'] : '';
-						while ($cat = mysqli_fetch_assoc($cat_result)) {
-							$cat_name = htmlspecialchars($cat['name']);
-							$is_active = ($active_category === $cat['name']);
-							echo '<li class="list-item"><a href="?category=' . urlencode($cat['name']) . '" class="list-item-link' . ($is_active ? ' active' : '') . '">' . $cat_name . '</a></li>';
-						}
-						?>
-						<li class="list-item show-more-li" style="display:none;"><button id="show-more-categories" class="list-item-link">+</button></li>
-					</ul>
+				<ul class="tags-list" id="category-tags-list">
+					<?php
+					$cat_result = mysqli_query($connection, 'SELECT * FROM categories ORDER BY name ASC');
+					$active_category = isset($_GET['category']) ? $_GET['category'] : '';
+					$cat_index = 0;
+					while ($cat = mysqli_fetch_assoc($cat_result)) {
+						$cat_name = htmlspecialchars($cat['name']);
+						$is_active = ($active_category === $cat['name']);
+						$hidden_class = $cat_index >= 10 ? ' hidden-category' : '';
+						echo '<li class="list-item' . $hidden_class . '"><a href="?category=' . urlencode($cat['name']) . '" class="list-item-link' . ($is_active ? ' active' : '') . '">' . $cat_name . '</a></li>';
+						$cat_index++;
+					}
+					?>
+					<li class="list-item show-more-li" style="display: none;">
+    					<button id="show-more-categories" class="list-item-link">+</button>
+					</li>
+				</ul>
+
 
 					<div class="flex-container centered-vertically">
 						<form class="search-form-wrapper" method="get" action="index.php" style="display:inline;">
@@ -204,7 +210,6 @@ include 'vertical-navbar.php';
 		</footer>
 	</div>
 
-	<script src="main.js"></script>
 
 	<!-- Google Maps Modal -->
 	<div id="maps-modal">
@@ -214,5 +219,7 @@ include 'vertical-navbar.php';
 			<a id="maps-link" href="#" target="_blank">Open in Google Maps</a>
 		</div>
 	</div>
+<script src="main.js"></script>
+
 </body>
 </html>
