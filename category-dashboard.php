@@ -195,7 +195,7 @@ while ($cat = mysqli_fetch_assoc($categories)):
 										<input type="hidden" name="delete_category_id" value="<?= $cat['id'] ?>" />
 										<button class="button button-inline" type="submit" style="background:#d32f2f; color:#fff; border-radius:6px;" onclick="return confirm('Delete this category?')">Delete</button>
 									</form>
-									<a href="category-dashboard.php?edit=<?= $cat['id'] ?>" class="button button-inline" style="background:#fbc02d; color:#333; border-radius:6px;">Edit</a>
+									<a href="category-dashboard.php?edit=<?= $cat['id'] ?>&page=<?= $page; ?>" class="button button-inline" style="background:#fbc02d; color:#333; border-radius:6px;">Edit</a>
 								</div>
 							</div>
 						</li>

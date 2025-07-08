@@ -2,6 +2,7 @@
 session_start();
 require 'dbconn.php';
 
+require_once 'config.php';
 $user_logged_in = false;
 $display_name = '';
 $current_page = basename($_SERVER['PHP_SELF']);
@@ -89,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$already_applied) {
 
     // Handle file upload
     if (isset($_FILES['cv_file_path']) && $_FILES['cv_file_path']['error'] == UPLOAD_ERR_OK) {
-        $upload_dir = 'uploads/';
+        $upload_dir = "/{$project_path}/uploads/";
         if (!is_dir($upload_dir)) {
             mkdir($upload_dir, 0777, true);
         }
