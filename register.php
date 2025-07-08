@@ -1,8 +1,17 @@
 <?php
 require 'dbconn.php';
+require __DIR__ . '/vendor/autoload.php';
+
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
 $user_logged_in = false;
 $display_name = '';
 $current_page = basename($_SERVER['PHP_SELF']);
+
 if (isset($_COOKIE['login_token'])) {
     $token = $_COOKIE['login_token'];
     $token_hash = hash('sha256', $token);
@@ -44,6 +53,36 @@ function sanitize($data) {
     return htmlspecialchars(strip_tags(trim($data)));
 }
 
+function sendVerificationEmail($toEmail, $token) {
+    $mail = new PHPMailer(true);
+
+    try {
+        // Server settings
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com'; // or your SMTP server
+        $mail->SMTPAuth = true;
+        $mail->Username = 'vzlatev7@gmail.com'; // replace with your Gmail
+        $mail->Password = $_ENV['MAIL_PASSWORD'];
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = 587;
+
+        // Recipients
+        $mail->setFrom($toEmail, 'TUES Internship');
+        $mail->addAddress($toEmail);
+
+        // Content
+        $mail->isHTML(true);
+        $mail->Subject = 'Your Verification Code';
+        $mail->Body    = "<p>Your verification code is: <strong>$token</strong></p>";
+
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        error_log("Mailer Error: " . $mail->ErrorInfo);
+        return false;
+    }
+}
+
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -79,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($errors)) {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
             $is_admin = preg_match('/@devrix\.com$/i', $email) ? 1 : 0;
-            $verification_token = bin2hex(random_bytes(16));
+            $verification_token = str_pad(random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
             $verified = 0;
 
             $stmt = $connection->prepare("INSERT INTO users 
@@ -102,8 +141,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
 
             if ($stmt->execute()) {
-                header('Location: login.php');
-                exit;
+                if (sendVerificationEmail($email, $verification_token)) {
+                    session_start();
+                    $_SESSION['2fa_email'] = $email;
+                    header("Location: twofa.php");
+                    exit;
+                } else {
+                    $errors[] = "Registration succeeded, but failed to send verification email.";
+                }
             } else {
                 $errors[] = "Database error: Could not register user.";
             }
@@ -112,9 +157,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+
+
 include 'header.php';
 include 'auth-user.php';
 include 'vertical-navbar.php';
+
 ?>
 
 <!DOCTYPE html>
