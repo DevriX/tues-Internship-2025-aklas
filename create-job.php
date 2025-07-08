@@ -95,6 +95,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("ssssiss", $job_title, $location, $salary, $description, $user_id, $created_at, $category_names);
 
         if ($stmt->execute()) {
+            $job_id = $stmt->insert_id;
+
+            if (!empty($selected_categories)) {
+                foreach ($selected_categories as $cat_name) {
+                    $cat_stmt = $connection->prepare("SELECT id FROM categories WHERE name = ?");
+                    $cat_stmt->bind_param("s", $cat_name);
+                    $cat_stmt->execute();
+                    $result = $cat_stmt->get_result();
+                    if ($row = $result->fetch_assoc()) {
+                        $cat_id = $row['id'];
+                        $jc_stmt = $connection->prepare("INSERT INTO job_categories (job_id, category_id) VALUES (?, ?)");
+                        $jc_stmt->bind_param("ii", $job_id, $cat_id);
+                        $jc_stmt->execute();
+                        $jc_stmt->close();
+                    }
+                    $cat_stmt->close();
+                }
+            }
+
             $success_message = 'Job created SUCCESSFULLY, waiting for approval';
             $job_title = $location = $salary = $description = '';
         } else {
