@@ -131,40 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Create Job</title>
     <link rel="stylesheet" href="./css/master.css">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 999;
-            padding-top: 100px;
-            left: 0; top: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-
-        .modal-content {
-            background-color: #fff;
-            margin: auto;
-            padding: 20px;
-            width: 40%;
-            border-radius: 8px;
-        }
-
-        .category-list {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .category-list label {
-            display: block;
-            margin-bottom: 8px;
-        }
-
-        .close-btn {
-            float: right;
-            font-size: 18px;
-            cursor: pointer;
-        }
-    </style>
+    
 </head>
 <body>
 <div class="site-wrapper">
