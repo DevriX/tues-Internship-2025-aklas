@@ -57,6 +57,19 @@ if ($user_logged_in && isset($user['id'])) {
     }
     $stmt->close();
 }
+
+//Functionality of the delete button
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_button'], $_POST['delete_id'])) {
+    $delete_id = intval($_POST['delete_id']);
+    // Make sure the user can only delete their own submissions!
+    $stmt = $connection->prepare("DELETE FROM apply_submissions WHERE id = ? AND user_id = ?");
+    $stmt->bind_param("ii", $delete_id, $user['id']);
+    $stmt->execute();
+    $stmt->close();
+    // Optionally, reload the page to update the list
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -79,18 +92,21 @@ if ($user_logged_in && isset($user['id'])) {
     <div class="flex-container centered-vertically centered-horizontally" style="flex-direction: column; width: 100%;">
         <?php if (count($submissions) > 0): ?>
             <?php foreach ($submissions as $submission): ?>
-                <div class="form-box box-shadow" style="margin-bottom: 2rem; position: relative; min-height: 120px;">
-                    <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap;">
-                        <div style="flex: 1 1 0; min-width: 0; text-align: left; word-break: break-word;">
-                            <h2 class="heading-title" style="margin: 0 0 1rem 0; font-size: 1.5rem; font-weight: 600; margin-top: 17px">
-                                <?php echo htmlspecialchars(($submission['company_name'] ?? 'Company') . ' - ' . ($submission['job_title'] ?? 'Position')); ?>
-                            </h2>
-                        </div>
-                        <div style="margin-left: 2rem; display: flex; align-items: flex-start;">
-                            <button class="button delete-application-btn">Delete Application</button>
+                <form method="POST" style="margin: 0;">
+                    <input type="hidden" name="delete_id" value="<?php echo htmlspecialchars($submission['id']); ?>">
+                    <div class="form-box box-shadow" style="width:700px; margin-bottom: 2rem; position: relative; min-height: 120px;">
+                        <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap;">
+                            <div style="flex: 1 1 0; min-width: 0; text-align: left; word-break: break-word;">
+                                <h2 class="heading-title" style="margin: 0 0 1rem 0; font-size: 1.5rem; font-weight: 600; margin-top: 17px">
+                                    <?php echo htmlspecialchars(($submission['company_name'] ?? 'Company') . ' - ' . ($submission['job_title'] ?? 'Position')); ?>
+                                </h2>
+                            </div>
+                            <div style="margin-left: 2rem; display: flex; align-items: flex-start;">
+                                <button type="submit" name="delete_button" class="button delete-application-btn">Delete Application</button>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </form>
             <?php endforeach; ?>
         <?php else: ?>
             <p style="text-align:center; color:#888;">You have not submitted any applications yet.</p>
