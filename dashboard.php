@@ -321,8 +321,12 @@ document.addEventListener('DOMContentLoaded', function() {
   // Job card click: open job details modal
   document.querySelectorAll('.job-card').forEach(function(card) {
     card.addEventListener('click', function(e) {
-      // Prevent opening modal if clicking on approve/reject buttons or location link
-      if (e.target.closest('form') || e.target.classList.contains('job-location-link')) return;
+      // Prevent opening modal if clicking on approve/reject buttons, location link, or bulk edit checkbox
+      if (
+        e.target.closest('form') ||
+        e.target.classList.contains('job-location-link') ||
+        (e.target.classList && e.target.classList.contains('bulk-job-checkbox'))
+      ) return;
       const job = {
         title: card.getAttribute('data-title'),
         company: card.getAttribute('data-company'),
@@ -331,6 +335,7 @@ document.addEventListener('DOMContentLoaded', function() {
         description: card.getAttribute('data-description'),
         created_at: card.getAttribute('data-created_at'),
         approved: card.getAttribute('data-approved') === '1',
+        categories: card.getAttribute('data-categories')
       };
       openJobDetailsModal(job);
     });
