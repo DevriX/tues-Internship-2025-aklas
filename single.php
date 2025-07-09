@@ -1,6 +1,9 @@
 <?php
 require 'dbconn.php';
 
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 $user_logged_in = false;
 $display_name = '';
 $current_page = basename($_SERVER['PHP_SELF']);
@@ -48,6 +51,60 @@ if ($job_id > 0) {
     $result = $stmt->get_result();
     if ($result->num_rows === 1) {
         $job = $result->fetch_assoc();
+    }
+    $stmt->close();
+}
+
+// Fetch current job's categories
+$current_job_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+$category_ids = [];
+if ($current_job_id) {
+    $cat_stmt = $connection->prepare(
+        "SELECT category_id FROM job_categories WHERE job_id = ?"
+    );
+    $cat_stmt->bind_param('i', $current_job_id);
+    $cat_stmt->execute();
+    $cat_result = $cat_stmt->get_result();
+    while ($row = $cat_result->fetch_assoc()) {
+        $category_ids[] = $row['category_id'];
+    }
+    $cat_stmt->close();
+}
+$related_jobs = [];
+if (!empty($category_ids)) {
+    // Find other jobs with these categories, count matches, exclude current job
+    $in = implode(',', array_fill(0, count($category_ids), '?'));
+    $types = str_repeat('i', count($category_ids) + 1); // +1 for current_job_id
+    $sql = "
+        SELECT j.*, COUNT(*) as match_count
+        FROM job_categories jc
+        JOIN jobs j ON jc.job_id = j.id
+        WHERE jc.category_id IN ($in) AND jc.job_id != ?
+        GROUP BY jc.job_id
+        ORDER BY match_count DESC, j.created_at DESC
+        LIMIT 5
+    ";
+    $stmt = $connection->prepare($sql);
+    $params = array_merge($category_ids, [$current_job_id]);
+    $stmt->bind_param($types, ...$params);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($related_job = $result->fetch_assoc()) {
+        if (empty($related_job['approved']) || !$related_job['approved']) continue; // Only show approved jobs
+        // Fetch categories for each related job
+        $cat_stmt = $connection->prepare(
+            "SELECT c.name FROM job_categories jc JOIN categories c ON jc.category_id = c.id WHERE jc.job_id = ?"
+        );
+        $cat_stmt->bind_param('i', $related_job['id']);
+        $cat_stmt->execute();
+        $cat_result = $cat_stmt->get_result();
+        $categories = [];
+        while ($row = $cat_result->fetch_assoc()) {
+            $categories[] = $row['name'];
+        }
+        $cat_stmt->close();
+        $related_job['categories'] = $categories;
+        $related_jobs[] = $related_job;
     }
     $stmt->close();
 }
@@ -114,6 +171,36 @@ if ($job_id > 0) {
 					<?php else: ?>
 						<p>Job not found.</p>
 					<?php endif; ?>
+				</div>
+			</section>
+			<section class="section-fullwidth">
+				<div class="row">
+					<h2 class="section-heading">Other related jobs:</h2>
+					<ul class="jobs-listing">
+						<?php foreach ($related_jobs as $job): ?>
+						<li class="job-card">
+							<div class="job-primary">
+								<h2 class="job-title"><a href="single.php?id=<?= $job['id'] ?>"><?= htmlspecialchars($job['title']) ?></a></h2>
+								<div class="job-meta">
+									<span class="meta-company"><?= htmlspecialchars($job['company_name'] ?? 'Unknown Company') ?></span>
+									<span class="meta-date">Posted <?= htmlspecialchars($job['created_at']) ?></span>
+								</div>
+								<div>
+									<span class="category-type"><?= htmlspecialchars(implode(', ', $job['categories'])) ?></span>
+								</div>
+								<div class="job-details">
+									<span class="job-location"><?= htmlspecialchars($job['location']) ?></span>
+									<span class="job-type">Salary: <?= htmlspecialchars($job['salary']) ?></span>
+								</div>
+							</div>
+							<div class="job-logo">
+								<div class="job-logo-box">
+									<img src="https://i.imgur.com/ZbILm3F.png" alt="">
+								</div>
+							</div>
+						</li>
+						<?php endforeach; ?>
+					</ul>
 				</div>
 			</section>
 		</main>
