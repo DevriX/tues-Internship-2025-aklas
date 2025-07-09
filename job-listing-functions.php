@@ -26,6 +26,7 @@ function render_jobs_listing($connection, $items_per_page, $offset, $current_pag
         data-approved="<?= $job['approved'] ? '1' : '0' ?>"
         style="cursor:pointer;"
     >
+        <input type="checkbox" class="bulk-job-checkbox" value="<?= $job['id'] ?>" style="display:none; margin-right:10px;" />
         <div class="job-primary">
             <h2 class="job-title"><?= htmlspecialchars($job['title']) ?></h2>
             <div class="job-details">

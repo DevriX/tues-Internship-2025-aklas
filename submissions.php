@@ -150,10 +150,6 @@ $stmt->close();
 		<main class="site-main">
 			<section class="section-fullwidth">
 				<div class="row">
-					<ul class="tabs-menu">
-						<li class="menu-item current-menu-item"><a href="#">Jobs</a></li>
-						<li class="menu-item"><a href="#">Categories</a></li>
-					</ul>
 
 					<div class="submission-form">
 						<h3 style="text-align: center; font-weight: 600; font-size: 2rem; margin-bottom: 1.5rem;">

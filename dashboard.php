@@ -106,6 +106,13 @@ if ($category_filter) {
     $show_pagination = true;
 }
 
+// Fetch categories for bulk assignment
+$categories_bulk = [];
+$cat_result_bulk = mysqli_query($connection, 'SELECT id, name FROM categories ORDER BY name ASC');
+while ($cat = mysqli_fetch_assoc($cat_result_bulk)) {
+    $categories_bulk[] = $cat;
+}
+
 include 'job-details-popup.php';
 ?>
 
@@ -159,14 +166,46 @@ include 'job-details-popup.php';
 							</div>
 						</div>
 					</div>
+					<!-- Bulk Edit Controls -->
+					<div id="bulk-edit-controls" style="margin: 1em 0;">
+						<button id="toggle-bulk-edit" type="button" class="button">Bulk Edit</button>
+						<form id="bulk-assign-form" style="display:none; margin-top: 1em; align-items:center; gap:1em;">
+							<select id="bulk-category-select" name="category_id" required>
+								<option value="">Assign Category…</option>
+								<?php foreach ($categories_bulk as $cat): ?>
+									<option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['name']) ?></option>
+								<?php endforeach; ?>
+							</select>
+							<button type="submit" class="button">Assign to Selected Jobs</button>
+						</form>
+					</div>
 					<ul class="jobs-listing">
 <?php
+$bulk_edit_mode = true; // JS will toggle this
 if ($category_filter || $search !== '') {
     // Show jobs from $jobs_result directly
     while ($job = $jobs_result->fetch_assoc()) {
         if (empty($job['title']) || empty($job['location'])) continue;
+        // Fetch categories for this job
+        $cat_stmt = $connection->prepare(
+            "SELECT c.name FROM job_categories jc
+             JOIN categories c ON jc.category_id = c.id
+             WHERE jc.job_id = ?"
+        );
+        $cat_stmt->bind_param('i', $job['id']);
+        $cat_stmt->execute();
+        $cat_result = $cat_stmt->get_result();
+        $categories = [];
+        while ($row = $cat_result->fetch_assoc()) {
+            $categories[] = $row['name'];
+        }
+        $cat_stmt->close();
+        $category_names = implode(', ', $categories);
         ?>
         <li class="job-card">
+            <?php if ($bulk_edit_mode): ?>
+                <input type="checkbox" class="bulk-job-checkbox" value="<?php echo $job['id']; ?>" style="display:none; margin-right:10px;" />
+            <?php endif; ?>
             <div class="job-primary">
                 <h2 class="job-title">
                     <a href="single.php?id=<?php echo $job['id']; ?>">
@@ -178,7 +217,7 @@ if ($category_filter || $search !== '') {
                     <span class="meta-date">Posted <?php echo htmlspecialchars($job['created_at']); ?></span>
                 </div>
                 <div>
-                    <span class="category-type"><?php echo htmlspecialchars($job['category'] ?? ''); ?></span>
+                    <span class="category-type"><?php echo htmlspecialchars($category_names); ?></span>
                 </div>
                 <div class="job-details">
                     <span class="job-location"><?php echo htmlspecialchars($job['location']); ?></span>
@@ -214,6 +253,50 @@ if ($category_filter || $search !== '') {
 	</div>
 <script src="main.js"></script>
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Bulk Edit Mode Toggle
+  const toggleBtn = document.getElementById('toggle-bulk-edit');
+  const bulkForm = document.getElementById('bulk-assign-form');
+  let bulkMode = false;
+  toggleBtn.addEventListener('click', function() {
+    bulkMode = !bulkMode;
+    document.querySelectorAll('.bulk-job-checkbox').forEach(cb => {
+      cb.style.display = bulkMode ? 'inline-block' : 'none';
+      cb.checked = false;
+    });
+    bulkForm.style.display = bulkMode ? 'flex' : 'none';
+    toggleBtn.textContent = bulkMode ? 'Exit Bulk Edit' : 'Bulk Edit';
+  });
+
+  // Bulk Assign Submit
+  bulkForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const selected = Array.from(document.querySelectorAll('.bulk-job-checkbox:checked')).map(cb => cb.value);
+    const categoryId = document.getElementById('bulk-category-select').value;
+    if (!categoryId || selected.length === 0) {
+      alert('Please select at least one job and a category.');
+      return;
+    }
+    fetch('bulk-assign-category.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ job_ids: selected, category_id: categoryId })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert('Category assigned successfully!');
+        location.reload();
+      } else {
+        alert('Error: ' + (data.error || 'Unknown error'));
+      }
+    })
+    .catch(() => alert('Request failed.'));
+  });
+});
+
+// Restore Google Maps modal and job details modal functionality
+
 document.addEventListener('DOMContentLoaded', function() {
   // Location link click: open Google Maps modal, stop propagation
   document.querySelectorAll('.job-location-link').forEach(function(link) {

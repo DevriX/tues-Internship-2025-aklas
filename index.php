@@ -180,7 +180,24 @@ include 'vertical-navbar.php';
 										<span class="meta-date">Posted <?php echo htmlspecialchars($job['created_at']); ?></span>
 									</div>
 									<div>
-										<span class= "category-type"><?php echo htmlspecialchars($job['category']); ?></span>
+										<?php
+										// Fetch categories for this job
+										$cat_stmt = $connection->prepare(
+											"SELECT c.name FROM job_categories jc
+											 JOIN categories c ON jc.category_id = c.id
+											 WHERE jc.job_id = ?"
+										);
+										$cat_stmt->bind_param('i', $job['id']);
+										$cat_stmt->execute();
+										$cat_result = $cat_stmt->get_result();
+										$categories = [];
+										while ($row = $cat_result->fetch_assoc()) {
+											$categories[] = $row['name'];
+										}
+										$cat_stmt->close();
+										$category_names = implode(', ', $categories);
+										?>
+										<span class="category-type"><?php echo htmlspecialchars($category_names); ?></span>
 									</div>
 									<div class="job-details">
 										<span class="job-location"><?php echo htmlspecialchars($job['location']); ?></span>
