@@ -1474,3 +1474,8 @@ ul {
   font-size: 18px;
   cursor: pointer;
 }
+
+.acceptable-file-types{
+  font-size: 13px;
+  float: left;
+}

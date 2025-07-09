@@ -8,7 +8,7 @@
       <p><strong>Email:</strong> <span id="modal-submission-email"></span></p>
       <p><strong>Submitted At:</strong> <span id="modal-submission-date"></span></p>
       <div>
-        <strong>CV:</strong> <span id="modal-cv"></span>
+        <strong>Files:</strong> <span id="modal-files"></span>
       </div>
       <p><strong>Cover Letter:</strong></p>
       <p><strong>Position:</strong> <span id="modal-job-title"></span></p>
@@ -22,10 +22,16 @@ function openSubmissionDetailsModal(sub) {
   document.getElementById('modal-submission-name').textContent = sub.name;
   document.getElementById('modal-submission-email').textContent = sub.email;
   document.getElementById('modal-submission-date').textContent = sub.date;
-  if (sub.cv) {
-    document.getElementById('modal-cv').innerHTML = `<a href="${sub.cv}" target="_blank">Download CV</a>`;
+  // Display all files
+  const filesSpan = document.getElementById('modal-files');
+  filesSpan.innerHTML = '';
+  if (sub.files && Array.isArray(sub.files) && sub.files.length > 0) {
+    filesSpan.innerHTML = sub.files.map(f => {
+      const fname = f.split('/').pop();
+      return `<a href="${f}" target="_blank">${fname}</a>`;
+    }).join('<br>');
   } else {
-    document.getElementById('modal-cv').textContent = '-';
+    filesSpan.textContent = '-';
   }
   document.getElementById('modal-job-title').textContent = sub.job_title;
   document.getElementById('modal-company-name').textContent = sub.company_name;

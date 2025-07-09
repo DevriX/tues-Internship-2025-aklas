@@ -54,6 +54,7 @@ $stmt->bind_param("ii", $items_per_page, $offset);
 $stmt->execute();
 $stmt->bind_result($id, $fname, $lname, $email, $phone, $message, $cv, $applied_at, $company_name, $job_title);
 while ($stmt->fetch()) {
+    $files = json_decode($cv, true) ?: [];
     $submissions[] = [
         'id' => $id,
         'first_name' => $fname,
@@ -61,7 +62,7 @@ while ($stmt->fetch()) {
         'email' => $email,
         'phone' => $phone,
         'message' => $message,
-        'cv' => $cv,
+        'files' => $files,
         'applied_at' => $applied_at,
 		'company_name' => $company_name,
 		'job_title' => $job_title
@@ -166,7 +167,7 @@ $stmt->close();
 										data-email="<?= htmlspecialchars($submission['email'], ENT_QUOTES) ?>"
 										data-phone="<?= htmlspecialchars($submission['phone'], ENT_QUOTES) ?>"
 										data-date="<?= htmlspecialchars($submission['applied_at'], ENT_QUOTES) ?>"
-										data-cv="<?= htmlspecialchars($submission['cv'], ENT_QUOTES) ?>"
+										data-files='<?= json_encode($submission['files'], JSON_HEX_APOS | JSON_HEX_QUOT) ?>'
 										data-company-name="<?= htmlspecialchars($submission['company_name'], ENT_QUOTES) ?>"
 										data-job-title="<?= htmlspecialchars($submission['job_title'], ENT_QUOTES) ?>"
 										data-cover="<?= htmlspecialchars($submission['message'], ENT_QUOTES) ?>"
@@ -193,14 +194,18 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelectorAll('.view-btn').forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
+      let files = [];
+      try {
+        files = JSON.parse(btn.getAttribute('data-files'));
+      } catch (err) {}
       const sub = {
         name: btn.getAttribute('data-name'),
         email: btn.getAttribute('data-email'),
         phone: btn.getAttribute('data-phone'),
         date: btn.getAttribute('data-date'),
-        cv: btn.getAttribute('data-cv'),
-		job_title: btn.getAttribute('data-job-title'),
-		company_name: btn.getAttribute('data-company-name'),
+        files: files,
+        job_title: btn.getAttribute('data-job-title'),
+        company_name: btn.getAttribute('data-company-name'),
         cover: btn.getAttribute('data-cover'),
       };
       openSubmissionDetailsModal(sub);
