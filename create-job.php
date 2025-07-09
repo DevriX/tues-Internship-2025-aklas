@@ -90,8 +90,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (empty($selected_categories)) {
         $error_message = "Please select at least one category.";
     } else {
-        $stmt = $connection->prepare("INSERT INTO jobs (title, location, salary, description, user_id, created_at) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssssis", $job_title, $location, $salary, $description, $user_id, $created_at);
+        $stmt = $connection->prepare("INSERT INTO jobs (title, location, salary, description, user_id, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
+        $stmt->bind_param("ssssi", $job_title, $location, $salary, $description, $user_id);
 
         if ($stmt->execute()) {
             $job_id = $stmt->insert_id;
