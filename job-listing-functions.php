@@ -33,7 +33,7 @@ function render_jobs_listing($connection, $items_per_page, $offset, $current_pag
                 <a href="#" class="job-location-link" data-location="<?= htmlspecialchars($job['location']) ?>" style="margin-right: 30px; text-decoration: underline; color: #007bff; cursor: pointer;">
                     <?= htmlspecialchars($job['location']) ?>
                 </a>
-                <span class="job-salary">Salary: <?= htmlspecialchars($job['salary']) ?></span>
+                <span class="job-salary">Monthly Salary: <?= htmlspecialchars($job['salary']) ?> лв</span>
             </div>
         </div>
         <div class="job-secondary">

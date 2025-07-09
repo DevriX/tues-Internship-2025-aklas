@@ -139,7 +139,7 @@ if (!empty($category_ids)) {
 										</div>
 										<div class="job-details">
 											<span class="job-location"><?php echo htmlspecialchars($job['location']); ?></span>
-											<span class="job-price"><?php echo htmlspecialchars($job['salary']); ?> лв.</span>
+											<span class="job-price"><?php echo htmlspecialchars($job['salary']); ?> лв</span>
 										</div>
 									</header>
 
@@ -190,7 +190,7 @@ if (!empty($category_ids)) {
 								</div>
 								<div class="job-details">
 									<span class="job-location"><?= htmlspecialchars($job['location']) ?></span>
-									<span class="job-type">Salary: <?= htmlspecialchars($job['salary']) ?></span>
+									<span class="job-type">Monthly Salary: <?= htmlspecialchars($job['salary']) ?> лв</span>
 								</div>
 							</div>
 							<div class="job-logo">

@@ -18,7 +18,7 @@ $token = $_COOKIE['login_token'];
 $token_hash = hash('sha256', $token);
 
 $stmt = $connection->prepare("
-    SELECT u.id, u.first_name, u.last_name, u.email, u.phone_number
+    SELECT u.id, u.first_name, u.last_name, u.email, u.phone_number, u.is_admin
     FROM login_tokens lt 
     JOIN users u ON lt.user_id = u.id 
     WHERE lt.token_hash = ? AND lt.expiry > NOW()
@@ -28,10 +28,19 @@ $stmt->execute();
 $stmt->store_result();
 
 if ($stmt->num_rows === 1) {
-    $stmt->bind_result($user_id, $first_name, $last_name, $email, $phone_number);
+    $stmt->bind_result($user_id, $first_name, $last_name, $email, $phone_number, $is_admin);
     $stmt->fetch();
     $user_logged_in = true;
     $display_name = $first_name;
+    // Set $user for navbar
+    $user = [
+        'id' => $user_id,
+        'first_name' => $first_name,
+        'last_name' => $last_name,
+        'email' => $email,
+        'phone_number' => $phone_number,
+        'is_admin' => $is_admin
+    ];
 } else {
     die('Invalid login session.');
 }
@@ -88,21 +97,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$already_applied) {
     $company_name = isset($_POST['company_name']) ? $_POST['company_name'] : null;
     $job_title = isset($_POST['job_title']) ? $_POST['job_title'] : null;
 
-    // Handle file upload
-    if (isset($_FILES['cv_file_path']) && $_FILES['cv_file_path']['error'] == UPLOAD_ERR_OK) {
-        $upload_dir = __DIR__ . '/uploads/';
-        if (!is_dir($upload_dir)) {
-            mkdir($upload_dir, 0777, true);
+    // Handle file upload (server-side)
+    $uploaded_files = [];
+    if (isset($_FILES['cv_file_path']) && isset($_FILES['cv_file_path']['name']) && is_array($_FILES['cv_file_path']['name'])) {
+        $allowed_exts = ['pdf', 'doc', 'docx', 'png'];
+        $max_files = 5;
+        $file_count = count($_FILES['cv_file_path']['name']);
+        if ($file_count > $max_files) {
+            echo "<p style='color: red; text-align: center;'>You can upload a maximum of 5 files.</p>";
+            exit;
         }
-        $filename = time() . '_' . basename($_FILES['cv_file_path']['name']);
-        $target_path = $upload_dir . $filename;
-        $relative_path = 'uploads/' . $filename; // This is what you save in the DB
-
-        if (move_uploaded_file($_FILES['cv_file_path']['tmp_name'], $target_path)) {
-            $cv_file_path = $relative_path; // <--- THIS is what you save in the DB
-        } else {
-            // Handle error
+        for ($i = 0; $i < $file_count; $i++) {
+            if ($_FILES['cv_file_path']['error'][$i] === UPLOAD_ERR_OK) {
+                $ext = strtolower(pathinfo($_FILES['cv_file_path']['name'][$i], PATHINFO_EXTENSION));
+                if (!in_array($ext, $allowed_exts)) {
+                    echo "<p style='color: red; text-align: center;'>Invalid file type: ".htmlspecialchars($ext).". Only PDF, DOC, DOCX allowed.</p>";
+                    exit;
+                }
+                $upload_dir = __DIR__ . '/uploads/';
+                if (!is_dir($upload_dir)) {
+                    mkdir($upload_dir, 0777, true);
+                }
+                $filename = time() . '_' . basename($_FILES['cv_file_path']['name'][$i]);
+                $target_path = $upload_dir . $filename;
+                $relative_path = 'uploads/' . $filename;
+                if (move_uploaded_file($_FILES['cv_file_path']['tmp_name'][$i], $target_path)) {
+                    $uploaded_files[] = $relative_path;
+                }
+            }
         }
+        // Save file paths as JSON or comma-separated string
+        $cv_file_path = json_encode($uploaded_files);
     }
 
     // Insert application (now with company_name and job_title)
@@ -190,7 +215,8 @@ include 'vertical-navbar.php';
                                         <textarea name="message" placeholder="Custom Message*" required></textarea>
                                     </div>
                                     <div class="form-field-wrapper width-large">
-                                        <input type="file" name="cv_file_path" />
+                                        <input type="file" name="cv_file_path[]" accept=".png,.pdf,.doc,.docx" multiple required />
+                                        <div class='acceptable-file-types'>Accepted file types: png, pdf, doc, docx, Max. files: 5.</div>
                                     </div>
                                 </div>
 
@@ -215,6 +241,32 @@ include 'vertical-navbar.php';
         </main>
     </div>
     <script src="main.js"></script>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.querySelector('input[type="file"][name="cv_file_path[]"]');
+    fileInput.addEventListener('change', function(e) {
+        const files = Array.from(fileInput.files);
+        if (files.length > 5) {
+            alert('You can upload a maximum of 5 files.');
+            fileInput.value = '';
+            return;
+        }
+        const allowed = [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'image/png'
+        ];
+        for (const file of files) {
+            if (!allowed.includes(file.type)) {
+                alert('Only PNG, PDF, DOC, and DOCX files are allowed.');
+                fileInput.value = '';
+                return;
+            }
+        }
+    });
+});
+</script>
 </body>
 </html>
 

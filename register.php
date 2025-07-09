@@ -57,7 +57,7 @@ function sendVerificationEmail($toEmail, $token) {
     $mail = new PHPMailer(true);
 
     try {
-        // Server settings
+    
         $mail->isSMTP();
         $mail->Host = 'smtp.gmail.com'; 
         $mail->SMTPAuth = true;
@@ -66,14 +66,17 @@ function sendVerificationEmail($toEmail, $token) {
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = 587;
 
-        // Recipients
         $mail->setFrom($toEmail, 'TUES Internship');
         $mail->addAddress($toEmail);
 
-        // Content
+        $verification_link = " http://localhost/tues-Internship-2025-aklas/twofa.php" ;
+
         $mail->isHTML(true);
         $mail->Subject = 'Your Verification Code';
-        $mail->Body    = "<p>Your verification code is: <strong>$token</strong></p>";
+        $mail->Body = "
+            <p>Your verification code is: <strong>$token</strong></p>
+            <p>Or click <a href='$verification_link'>here</a> to verify your account.</p>
+        ";
 
         $mail->send();
         return true;
@@ -82,6 +85,10 @@ function sendVerificationEmail($toEmail, $token) {
         return false;
     }
 }
+
+
+
+
 
 $errors = [];
 

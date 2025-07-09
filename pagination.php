@@ -9,7 +9,7 @@ function render_pagination($total_items, $items_per_page, $current_page, $base_u
     // Prev button
     if ($current_page > 1) {
         $prev_url = htmlspecialchars($base_url . $separator . $page_param . '=' . ($current_page - 1));
-        echo '<a class="page-numbers prev" href="' . $prev_url . '">« Prev</a>';
+        echo '<a class="page-numbers prev" href="' . $prev_url . '">«</a>';
     }
 
     // Smart page numbers
@@ -37,7 +37,7 @@ function render_pagination($total_items, $items_per_page, $current_page, $base_u
     // Next button
     if ($current_page < $total_pages) {
         $next_url = htmlspecialchars($base_url . $separator . $page_param . '=' . ($current_page + 1));
-        echo '<a class="page-numbers next" href="' . $next_url . '">Next »</a>';
+        echo '<a class="page-numbers next" href="' . $next_url . '">»</a>';
     }
 
     echo '</div></div>';
