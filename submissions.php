@@ -1,4 +1,5 @@
-<?php 
+<?php
+require_once 'require_admin.php';
 require 'dbconn.php';
 
 $user_logged_in = false;

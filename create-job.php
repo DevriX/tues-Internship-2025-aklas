@@ -1,4 +1,5 @@
 <?php
+require_once 'require_login.php';
 require 'dbconn.php';
 $user_logged_in = false;
 $display_name = '';

@@ -1,4 +1,6 @@
 <?php
+require_once 'require_admin.php';
+require_once 'require_login.php';
 require_once 'dbconn.php';
 include 'auth-user.php';
 include 'job-listing-functions.php';

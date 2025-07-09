@@ -1,4 +1,6 @@
 <?php
+require_once 'require_admin.php';
+require_once 'require_login.php';
 
 $update_error = false;
 $edit_success = false;
