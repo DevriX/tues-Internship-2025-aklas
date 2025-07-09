@@ -221,7 +221,7 @@ if ($category_filter || $search !== '') {
                 </div>
                 <div class="job-details">
                     <span class="job-location"><?php echo htmlspecialchars($job['location']); ?></span>
-                    <span class="job-type">Salary: <?php echo htmlspecialchars($job['salary']); ?></span>
+                    <span class="job-type">Monthly Salary: <?php echo htmlspecialchars($job['salary']); ?> лв</span>
                 </div>
             </div>
             <div class="job-logo">

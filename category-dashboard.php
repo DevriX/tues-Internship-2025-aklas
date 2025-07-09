@@ -65,12 +65,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['new_category_name']))
 // Handle Delete Category
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_category_id'])) {
     $delete_id = intval($_POST['delete_category_id']);
-    $stmt = $connection->prepare('DELETE FROM categories WHERE id = ?');
-    $stmt->bind_param('i', $delete_id);
-    $stmt->execute();
-    $stmt->close();
-    header('Location: category-dashboard.php');
-    exit;
+    $error = '';
+    try {
+        $stmt = $connection->prepare('DELETE FROM categories WHERE id = ?');
+        $stmt->bind_param('i', $delete_id);
+        $stmt->execute();
+        $stmt->close();
+        header('Location: category-dashboard.php');
+        exit;
+    } catch (mysqli_sql_exception $e) {
+        if (strpos($e->getMessage(), 'a foreign key constraint fails') !== false) {
+            $error = "Category can't be deleted";
+            $update_error = true;
+        } else {
+            throw $e;
+        }
+    }
 }
 // Handle Edit Category
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_category_id'], $_POST['edit_category_name'])) {

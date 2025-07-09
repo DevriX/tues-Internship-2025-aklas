@@ -6,7 +6,7 @@
     <div class="modal-job-info">
       <p><strong>Company:</strong> <span id="modal-job-company"></span></p>
       <p><strong>Location:</strong> <span id="modal-job-location"></span></p>
-      <p><strong>Salary:</strong> <span id="modal-job-salary"></span></p>
+      <p><strong>Monthly Salary:</strong> <span id="modal-job-salary"></span> лв</p>
       <p><strong>Description:</strong></p>
       <p id="modal-job-description"></p>
       <p><strong>Created At:</strong> <span id="modal-job-created"></span></p>
