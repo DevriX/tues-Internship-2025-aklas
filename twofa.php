@@ -14,11 +14,14 @@ $email = $_SESSION['2fa_email'];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $entered_code = trim($_POST['verification_code'] ?? '');
 
-    if (!$entered_code || !ctype_digit($entered_code)) {
+    if (!$entered_code || !ctype_digit($entered_code) || strlen($entered_code) !== 6) {
         $errors[] = "Please enter a valid 6-digit verification code.";
     } else {
+
+        $entered_code_hash = hash('sha256', $entered_code);
+
         $stmt = $connection->prepare("SELECT id FROM users WHERE email = ? AND verification_token = ?");
-        $stmt->bind_param("ss", $email, $entered_code);
+        $stmt->bind_param("ss", $email, $entered_code_hash);
         $stmt->execute();
         $stmt->store_result();
 

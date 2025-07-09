@@ -59,9 +59,9 @@ function sendVerificationEmail($toEmail, $token) {
     try {
         // Server settings
         $mail->isSMTP();
-        $mail->Host = 'smtp.gmail.com'; // or your SMTP server
+        $mail->Host = 'smtp.gmail.com'; 
         $mail->SMTPAuth = true;
-        $mail->Username = 'vzlatev7@gmail.com'; // replace with your Gmail
+        $mail->Username = 'vzlatev7@gmail.com'; 
         $mail->Password = $_ENV['MAIL_PASSWORD'];
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = 587;
@@ -119,6 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
             $is_admin = preg_match('/@devrix\.com$/i', $email) ? 1 : 0;
             $verification_token = str_pad(random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
+            $verification_token_hash = hash('sha256', $verification_token);
             $verified = 0;
 
             $stmt = $connection->prepare("INSERT INTO users 
@@ -137,7 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $company_name,
                 $company_site,
                 $verified,
-                $verification_token
+                $verification_token_hash
             );
 
             if ($stmt->execute()) {
