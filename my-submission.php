@@ -59,7 +59,7 @@ if ($user_logged_in && isset($user['id'])) {
 }
 
 //Functionality of the delete button
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_button'], $_POST['delete_id'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
     $delete_id = intval($_POST['delete_id']);
     // Make sure the user can only delete their own submissions!
     $stmt = $connection->prepare("DELETE FROM apply_submissions WHERE id = ? AND user_id = ?");
@@ -93,6 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_button'], $_PO
         <?php if (count($submissions) > 0): ?>
             <?php foreach ($submissions as $submission): ?>
                 <form method="POST" style="margin: 0;">
+                    <input type="hidden" name="delete_button" value="1">
                     <input type="hidden" name="delete_id" value="<?php echo htmlspecialchars($submission['id']); ?>">
                     <div class="form-box box-shadow" style="width:700px; margin-bottom: 2rem; position: relative; min-height: 120px;">
                         <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap;">
@@ -117,5 +118,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_button'], $_PO
 		</main>
 	</div>
 	<script src="main.js"></script>
+
+<!-- Confirmation Modal for Deleting Application -->
+<div id="confirm-delete-modal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); align-items:center; justify-content:center;">
+  <div style="background:#fff; padding:2rem; border-radius:8px; min-width:300px; max-width:90vw; box-shadow:0 2px 16px rgba(0,0,0,0.2); text-align:center;">
+    <h3 style="margin-bottom:1rem;">Confirm Deletion</h3>
+    <p style="margin-bottom:2rem;">Are you sure you want to delete this application? This action cannot be undone.</p>
+    <button id="confirm-delete-yes" class="button" style="margin-right:1rem;" name="confirm-delete-button">Yes, Delete</button>
+    <button id="confirm-delete-no" class="button button-secondary">Cancel</button>
+  </div>
+</div>
+<script>
+let formToDelete = null;
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.delete-application-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      formToDelete = btn.closest('form');
+      document.getElementById('confirm-delete-modal').style.display = 'flex';
+    });
+  });
+  document.getElementById('confirm-delete-yes').onclick = function() {
+    document.getElementById('confirm-delete-modal').style.display = 'none';
+    if (formToDelete) {
+      formToDelete.submit();
+      formToDelete = null;
+    }
+  };
+  document.getElementById('confirm-delete-no').onclick = function() {
+    document.getElementById('confirm-delete-modal').style.display = 'none';
+    formToDelete = null;
+  };
+  document.getElementById('confirm-delete-modal').onclick = function(e) {
+    if (e.target === this) {
+      this.style.display = 'none';
+      formToDelete = null;
+    }
+  };
+});
+</script>
 </body>
 </html>
