@@ -1,4 +1,5 @@
 <?php
+require_once 'require_login.php';
 require_once 'dbconn.php';
 header('Content-Type: application/json');
 
