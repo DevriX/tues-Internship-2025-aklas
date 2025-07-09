@@ -14,7 +14,9 @@ $is_admin = $is_logged_in && isset($user['is_admin']) && $user['is_admin'];
         <?php endif; ?>
         <a href="/<?= $project_path ?>/my-submission.php" class="footer-vlink<?php if($current_page == 'my-submission.php') echo ' active'; ?>">My Submission</a>
         <a href="/<?= $project_path ?>/create-job.php" class="footer-vlink<?php if($current_page == 'create-job.php') echo ' active'; ?>">Create-Edit Job</a>
-        <a href="/<?= $project_path ?>/category-dashboard.php" class="footer-vlink<?php if($current_page == 'category-dashboard.php') echo ' active'; ?>">Category Dashboard</a>
+        <?php if($is_logged_in && $is_admin): ?>
+            <a href="/<?= $project_path ?>/category-dashboard.php" class="footer-vlink<?php if($current_page == 'category-dashboard.php') echo ' active'; ?>">Category Dashboard</a>
+        <?php endif; ?>
         <a href="/<?= $project_path ?>/profile.php" class="footer-vlink<?php if($current_page == 'profile.php') echo ' active'; ?>">My Profile</a>
         <?php if ($is_logged_in): ?>
             <a href="/<?= $project_path ?>/logout.php" class="footer-vlink<?php if($current_page == 'logout.php') echo ' active'; ?>">Logout</a>
