@@ -37,23 +37,63 @@ if (isset($_COOKIE['login_token'])) {
 include 'header.php';
 include 'vertical-navbar.php';
 
+// Accept/Reject Offer logic must be before any output or includes
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_once 'dbconn.php';
+    if (isset($_POST['accept_offer_submission_id'])) {
+        $submission_id = intval($_POST['accept_offer_submission_id']);
+        // Get job_id from submission
+        $stmt = $connection->prepare("SELECT job_id FROM apply_submissions WHERE id = ?");
+        $stmt->bind_param("i", $submission_id);
+        $stmt->execute();
+        $stmt->bind_result($job_id);
+        if ($stmt->fetch() && $job_id) {
+            $stmt->close();
+            // First, delete all submissions for this job
+            $del_subs = $connection->prepare("DELETE FROM apply_submissions WHERE job_id = ?");
+            $del_subs->bind_param("i", $job_id);
+            $del_subs->execute();
+            $del_subs->close();
+            // Then, delete the job from jobs table
+            $del = $connection->prepare("DELETE FROM jobs WHERE id = ?");
+            $del->bind_param("i", $job_id);
+            $del->execute();
+            $del->close();
+        } else {
+            $stmt->close();
+        }
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit();
+    } elseif (isset($_POST['reject_offer_submission_id'])) {
+        $submission_id = intval($_POST['reject_offer_submission_id']);
+        // Delete the submission entirely
+        $stmt = $connection->prepare("DELETE FROM apply_submissions WHERE id = ?");
+        $stmt->bind_param("i", $submission_id);
+        $stmt->execute();
+        $stmt->close();
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit();
+    }
+}
+
 // Fetch all submissions for the logged-in user
 $submissions = [];
 if ($user_logged_in && isset($user['id'])) {
     $stmt = $connection->prepare("
-        SELECT id, company_name, job_title
+        SELECT id, company_name, job_title, status
         FROM apply_submissions
         WHERE user_id = ?
         ORDER BY applied_at DESC
     ");
     $stmt->bind_param("i", $user['id']);
     $stmt->execute();
-    $stmt->bind_result($id, $company_name, $job_title);
+    $stmt->bind_result($id, $company_name, $job_title, $status);
     while ($stmt->fetch()) {
         $submissions[] = [
             'id' => $id,
             'company_name' => $company_name,
             'job_title' => $job_title,
+            'status' => $status,
         ];
     }
     $stmt->close();
@@ -83,6 +123,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
 	<link rel="preconnect" href="https://fonts.gstatic.com">
 	<link rel="stylesheet" href="./css/master.css">
 	<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .submission-offer-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.2rem;
+            margin-top: 1.5rem;
+        }
+        .submission-offer-btn {
+            min-width: 220px;
+            padding: 0.9rem 2.2rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 2rem;
+            cursor: pointer;
+            transition: background 0.18s, box-shadow 0.18s, transform 0.15s;
+            box-shadow: 0 2px 12px rgba(80,0,120,0.08);
+        }
+        .submission-offer-btn.accept {
+            background: linear-gradient(90deg, #34d399 0%, #059669 100%);
+            color: #fff;
+        }
+        .submission-offer-btn.accept:hover {
+            background: linear-gradient(90deg, #059669 0%, #34d399 100%);
+            transform: translateY(-2px) scale(1.04);
+        }
+        .submission-offer-btn.reject {
+            background: linear-gradient(90deg, #f87171 0%, #b91c1c 100%);
+            color: #fff;
+        }
+        .submission-offer-btn.reject:hover {
+            background: linear-gradient(90deg, #b91c1c 0%, #f87171 100%);
+            transform: translateY(-2px) scale(1.04);
+        }
+        .submission-offer-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .submission-offer-message {
+            color: #059669;
+            font-weight: 500;
+            font-size: 1.15rem;
+            margin-bottom: 1.2rem;
+        }
+        .form-box.box-shadow {
+            background: #f7f7f7;
+            border-radius: 1.5rem;
+            box-shadow: 0 4px 24px rgba(80,0,120,0.08);
+        }
+    </style>
 </head>
 <body>
 	<div class="site-wrapper">
@@ -93,18 +184,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
     <div class="flex-container centered-vertically centered-horizontally" style="flex-direction: column; width: 100%;">
         <?php if (count($submissions) > 0): ?>
             <?php foreach ($submissions as $submission): ?>
+                <?php if (($submission['status'] ?? '') === 'rejected'): ?>
+                    <div class="form-box box-shadow" style="width:700px; margin-bottom: 2rem; position: relative; min-height: 120px; background: #fff0f0; border: 1px solid #f87171;">
+                        <div style="padding: 2rem; text-align: center; color: #b91c1c; font-size: 1.15rem; font-weight: 500;">
+                            Your application for the position <b><?= htmlspecialchars($submission['job_title'] ?? 'the position') ?></b> was rejected.
+                        </div>
+                    </div>
+                    <?php 
+                    // After displaying the message, delete the submission from the database
+                    $stmt = $connection->prepare("DELETE FROM apply_submissions WHERE id = ?");
+                    $stmt->bind_param("i", $submission['id']);
+                    $stmt->execute();
+                    $stmt->close();
+                    continue; ?>
+                <?php endif; ?>
+                <?php $is_accepted = (($submission['status'] ?? '') === 'accepted'); ?>
                 <form method="POST" style="margin: 0;">
                     <input type="hidden" name="delete_button" value="1">
                     <input type="hidden" name="delete_id" value="<?php echo htmlspecialchars($submission['id']); ?>">
-                    <div class="form-box box-shadow" style="width:700px; margin-bottom: 2rem; position: relative; min-height: 120px;">
+                    <div class="form-box box-shadow" style="width:700px; margin-bottom: 2rem; position: relative; min-height: 120px;<?php if ($is_accepted && isset($_POST['accept_offer_submission_id']) && intval($_POST['accept_offer_submission_id']) === $submission['id']) echo ' background: #f3f3f3; opacity: 0.7; pointer-events: none;'; ?>">
                         <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap;">
                             <div style="flex: 1 1 0; min-width: 0; text-align: left; word-break: break-word;">
                                 <h2 class="heading-title" style="margin: 0 0 1rem 0; font-size: 1.5rem; font-weight: 600; margin-top: 17px">
                                     <?php echo htmlspecialchars(($submission['company_name'] ?? 'Company') . ' - ' . ($submission['job_title'] ?? 'Position')); ?>
                                 </h2>
+                                <?php if ($is_accepted): ?>
+                                    <div class="submission-offer-message">
+                                        You have <b>accepted</b> the offer. Please wait for the company to confirm and finalize the process.
+                                    </div>
+                                    <div class="submission-offer-actions">
+                                        <form method="POST" style="display:inline;">
+                                            <input type="hidden" name="accept_offer_submission_id" value="<?php echo htmlspecialchars($submission['id']); ?>">
+                                            <button type="submit" class="submission-offer-btn accept">Accept Offer</button>
+                                        </form>
+                                        <form method="POST" style="display:inline;">
+                                            <input type="hidden" name="reject_offer_submission_id" value="<?php echo htmlspecialchars($submission['id']); ?>">
+                                            <button type="submit" class="submission-offer-btn reject">Reject Offer</button>
+                                        </form>
+                                    </div>
+                                <?php elseif (($submission['status'] ?? '') === 'in_progress'): ?>
+                                    <div style="color: #f59e42; font-weight: 500; font-size: 1.1rem; margin-bottom: 0.5rem;">
+                                        Your application is <b>in progress</b>. Please wait for the company to make a decision.
+                                    </div>
+                                <?php endif; ?>
                             </div>
                             <div style="margin-left: 2rem; display: flex; align-items: flex-start;">
-                                <button type="submit" name="delete_button" class="button delete-application-btn">Delete Application</button>
+                                <button type="submit" name="delete_button" class="button delete-application-btn" <?php if (($submission['status'] ?? '') === 'in_progress') echo 'disabled style="opacity:0.5;cursor:not-allowed;"'; ?>>Delete Application</button>
                             </div>
                         </div>
                     </div>

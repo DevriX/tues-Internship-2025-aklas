@@ -76,9 +76,10 @@ if (!empty($category_ids)) {
     $in = implode(',', array_fill(0, count($category_ids), '?'));
     $types = str_repeat('i', count($category_ids) + 1); // +1 for current_job_id
     $sql = "
-        SELECT j.*, COUNT(*) as match_count
+        SELECT j.*, u.company_name, COUNT(*) as match_count
         FROM job_categories jc
         JOIN jobs j ON jc.job_id = j.id
+        LEFT JOIN users u ON j.user_id = u.id
         WHERE jc.category_id IN ($in) AND jc.job_id != ?
         GROUP BY jc.job_id
         ORDER BY match_count DESC, j.created_at DESC
