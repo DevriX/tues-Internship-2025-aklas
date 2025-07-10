@@ -12,7 +12,7 @@ require_once 'require_login.php'
         body {
             margin: 0;
             font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(to right, #e3f2fd, #bbdefb);
+            background: linear-gradient(to right, #ede9fe, #c4b5fd);
             color: #2c3e50;
             height: 100vh;
             display: flex;
@@ -31,9 +31,9 @@ require_once 'require_login.php'
         }
 
         h1 {
-            color: #1565c0;
+            color: #7c3aed;
             margin-bottom: 20px;
-            font-weight: 400;
+            font-weight: 600;
         }
 
         p {
@@ -45,18 +45,21 @@ require_once 'require_login.php'
         .btn {
             margin-top: 25px;
             padding: 10px 20px;
-            background-color: #1976d2;
+            background-color: #7c3aed;
             color: white;
             border: none;
             border-radius: 8px;
             font-size: 16px;
             cursor: pointer;
             text-decoration: none;
-            font-weight: 300;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(124,58,237,0.10);
+            transition: background 0.2s, box-shadow 0.2s;
         }
 
         .btn:hover {
-            background-color: #1565c0;
+            background-color: #5b21b6;
+            box-shadow: 0 4px 16px rgba(124,58,237,0.18);
         }
     </style>
 </head>

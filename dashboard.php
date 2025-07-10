@@ -173,7 +173,7 @@ include 'job-details-popup.php';
 					</div>
 					<!-- Bulk Edit Controls -->
 					<div id="bulk-edit-controls" style="margin: 1em 0;">
-						<button id="toggle-bulk-edit" type="button" class="button">Bulk Edit</button>
+						<button id="toggle-bulk-edit" type="button" class="button" style="background:#7c3aed; color:#fff;">Bulk Edit</button>
 						<form id="bulk-assign-form" style="display:none; margin-top: 1em; align-items:center; gap:1em;">
 							<select id="bulk-category-select" name="category_id" required>
 								<option value="">Assign Category…</option>
@@ -181,7 +181,7 @@ include 'job-details-popup.php';
 									<option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['name']) ?></option>
 								<?php endforeach; ?>
 							</select>
-							<button type="submit" class="button">Assign to Selected Jobs</button>
+							<button type="submit" class="button" style="background:#7c3aed; color:#fff;">Assign to Selected Jobs</button>
 						</form>
 					</div>
 					<ul class="jobs-listing">

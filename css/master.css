@@ -340,7 +340,7 @@ template {
 :root {
   --color-base: #f8f9ff;
   --color-base-light: #fff;
-  --color-primary: #3c71fe;
+  --color-primary: #7c3aed; /* PURPLE */
   --color-separator: #d5dcef;
   --color-base-invert: #000;
   --color-muted: #d9d9d9;
@@ -586,7 +586,7 @@ ul {
 }
 .button-inline {
   --button-background-color: transparent;
-  --button-color: var(--color-base-invert);
+  --button-color: var(--color-primary);
   line-height: 1;
 }
 .button-inline:hover {
@@ -1168,16 +1168,17 @@ ul {
   text-decoration: underline;
 }
 .footer-vlink[href*='logout.php'], .footer-vlink[href*='register.php'] {
-  color: #007bff !important;
+  color: #7c3aed !important;
   font-weight: 600;
 }
 .footer-vlink[href*='logout.php']:hover, .footer-vlink[href*='register.php']:hover {
   text-decoration: underline;
-  background: #eaf2ff;
-  border-left: 4px solid #007bff;
+  background: #f3eaff;
+  border-left: 4px solid #7c3aed;
+  color: #7c3aed !important;
 }
 .footer-vlink.blue-link {
-    color: #007bff; /* or whatever blue you use for Logout */
+    color: #7c3aed;
     font-weight: bold;
 }
 @media (max-width: 700px) {
@@ -1207,7 +1208,7 @@ ul {
   width: 44px;
   height: 44px;
   border-radius: 30%;
-  border: 2px solid #222;
+  border: 2px solid #7c3aed;
   background: #fff;
   cursor: pointer;
   transition: box-shadow 0.2s, border-color 0.2s, background 0.2s;
@@ -1217,13 +1218,13 @@ ul {
 }
 .menu-toggle-btn:hover,
 .menu-toggle-btn:focus {
-  border-color: #3c71fe;
+  border-color: #7c3aed;
   background: #f0f4ff;
-  box-shadow: 0 4px 16px rgba(60,113,254,0.10);
+  box-shadow: 0 4px 16px rgba(124,58,237,0.10);
 }
 .menu-toggle-btn svg {
   display: block;
-  fill: #222;
+  fill: #7c3aed;
 }
 
 /* --- Vertical navbar overlay show/hide --- */
@@ -1565,6 +1566,19 @@ ul {
 }
 .footer-vlink.active {
   background: #ede9fe !important;
+}
+
+.view-btn {
+  background: #7c3aed !important;
+  color: #fff !important;
+  border: none !important;
+  padding: 0.5rem 1rem;
+  border-radius: 0.3rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+.view-btn:hover {
+  background: #5b21b6 !important;
 }
 
 /* .form-box {

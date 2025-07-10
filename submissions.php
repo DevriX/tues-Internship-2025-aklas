@@ -82,7 +82,7 @@ $stmt->close();
 	<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 	<style>
 	.submission-form {
-		background: linear-gradient(135deg, #d0f0ff 0%, #e6f7ff 100%);
+		background: linear-gradient(135deg, #ede9fe 0%, #f3e8ff 100%);
 		padding: 2rem;
 		border-radius: 1rem;
 		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -121,9 +121,9 @@ $stmt->close();
 	}
 
 	.submission-entry .view-btn {
-		background: #4a90e2;
-		color: white;
-		border: none;
+		background: #7c3aed !important;
+		color: white !important;
+		border: none !important;
 		padding: 0.5rem 1rem;
 		border-radius: 0.3rem;
 		cursor: pointer;
@@ -131,7 +131,7 @@ $stmt->close();
 	}
 
 	.submission-entry .view-btn:hover {
-		background: #357ab7;
+		background: #5b21b6 !important;
 	}
 
 	@keyframes floatIn {
