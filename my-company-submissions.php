@@ -1,0 +1,249 @@
+<?php
+require_once 'require_login.php';
+require_once 'dbconn.php';
+include 'auth-user.php';
+
+// Set variables for header.php compatibility
+$user_logged_in = isset(
+    $is_logged_in
+) ? $is_logged_in : false;
+$display_name = isset($user['first_name']) ? $user['first_name'] : '';
+$current_page = basename($_SERVER['PHP_SELF']);
+
+include 'header.php';
+include_once 'vertical-navbar.php';
+include 'submission-details-popup.php';
+
+$user_company = $user['company_name'] ?? '';
+$submissions = [];
+
+if ($user_company) {
+    $stmt = $connection->prepare("
+        SELECT a.id, u.first_name, u.last_name, u.email, u.phone_number, a.message, a.cv_file_path, a.applied_at, a.company_name, a.job_title
+        FROM apply_submissions a
+        JOIN users u ON a.user_id = u.id
+        WHERE a.company_name = ?
+        ORDER BY a.applied_at DESC
+    ");
+    $stmt->bind_param("s", $user_company);
+    $stmt->execute();
+    $stmt->bind_result($id, $fname, $lname, $email, $phone, $message, $cv, $applied_at, $company_name, $job_title);
+    while ($stmt->fetch()) {
+        $files = json_decode($cv, true) ?: [];
+        $submissions[] = [
+            'id' => $id,
+            'first_name' => $fname,
+            'last_name' => $lname,
+            'email' => $email,
+            'phone' => $phone,
+            'message' => $message,
+            'files' => $files,
+            'applied_at' => $applied_at,
+            'company_name' => $company_name,
+            'job_title' => $job_title
+        ];
+    }
+    $stmt->close();
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Company Submissions</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./css/master.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .company-submissions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        .company-card {
+            background: #fff;
+            border-radius: 1.2rem;
+            box-shadow: 0 4px 24px rgba(80,0,120,0.10);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.18s cubic-bezier(.4,2,.6,1), box-shadow 0.18s;
+            border: none;
+            min-height: 180px;
+        }
+        .company-card:hover {
+            transform: translateY(-6px) scale(1.025);
+            box-shadow: 0 8px 32px rgba(80,0,120,0.16);
+        }
+        .company-card-accent {
+            height: 6px;
+            width: 100%;
+            background: linear-gradient(90deg, #7c3aed 0%, #4b0082 100%);
+            margin-bottom: 1.2rem;
+        }
+        .company-card-content {
+            flex: 1 1 auto;
+            padding: 1.2rem 1.5rem 1.5rem 1.5rem;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 1.2rem;
+        }
+        .company-card-avatar {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e0d7f7 0%, #f0e6ff 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4b0082;
+            box-shadow: 0 2px 8px rgba(80,0,120,0.07);
+            flex-shrink: 0;
+            text-transform: uppercase;
+        }
+        .company-card-info {
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+        .company-card-name {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: #2d1457;
+            margin-bottom: 0.1rem;
+        }
+        .company-card-job {
+            font-size: 1rem;
+            color: #7c3aed;
+            font-weight: 500;
+        }
+        .company-card-date {
+            font-size: 0.95rem;
+            color: #888;
+            margin-top: 0.2rem;
+        }
+        .company-card-action {
+            margin-left: auto;
+            align-self: flex-end;
+        }
+        .company-card .view-btn {
+            background: linear-gradient(90deg, #7c3aed 0%, #4b0082 100%);
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1.3rem;
+            border-radius: 0.4rem;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 1rem;
+            box-shadow: 0 2px 8px rgba(80,0,120,0.07);
+            transition: background 0.2s;
+        }
+        .company-card .view-btn:hover {
+            background: linear-gradient(90deg, #4b0082 0%, #7c3aed 100%);
+        }
+        .company-empty-state {
+            text-align: center;
+            color: #4b0082;
+            margin: 3rem 0 2rem 0;
+            font-size: 1.2rem;
+            opacity: 0.85;
+        }
+        .company-empty-illustration {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1.2rem auto;
+            display: block;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+<div class="site-wrapper">
+    <main class="site-main">
+        <section class="section-fullwidth">
+            <div class="row">
+                <h3 style="text-align: center; font-weight: 700; font-size: 2.1rem; color: #4b0082; margin-bottom: 2.2rem;">My Company Submissions</h3>
+                <?php if (!$user_company): ?>
+                    <div class="company-empty-state">
+                        <svg class="company-empty-illustration" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="32" fill="#e6e6ff"/><rect x="18" y="28" width="28" height="16" rx="4" fill="#7c3aed"/><rect x="24" y="34" width="16" height="4" rx="2" fill="#fff"/></svg>
+                        You do not have a company set in your profile.<br><a href="profile.php">Set your company</a> to view submissions.
+                    </div>
+                <?php elseif (count($submissions) > 0): ?>
+                    <div class="company-submissions-grid">
+                        <?php foreach ($submissions as $submission):
+                            $initials = strtoupper(mb_substr($submission['first_name'],0,1).mb_substr($submission['last_name'],0,1));
+                        ?>
+                        <div class="company-card">
+                            <div class="company-card-accent"></div>
+                            <div class="company-card-content">
+                                <div class="company-card-avatar"><?= $initials ?></div>
+                                <div class="company-card-info">
+                                    <div class="company-card-name">
+                                        <?= htmlspecialchars($submission['first_name']) ?> <?= htmlspecialchars($submission['last_name']) ?>
+                                    </div>
+                                    <div class="company-card-job">
+                                        <?= htmlspecialchars($submission['job_title'] ?: '—') ?>
+                                    </div>
+                                    <div class="company-card-date">
+                                        <?= date('M d, Y', strtotime($submission['applied_at'])) ?>
+                                    </div>
+                                </div>
+                                <div class="company-card-action">
+                                    <button class="view-btn"
+                                        data-name="<?= htmlspecialchars($submission['first_name'] . ' ' . $submission['last_name'], ENT_QUOTES) ?>"
+                                        data-email="<?= htmlspecialchars($submission['email'], ENT_QUOTES) ?>"
+                                        data-phone="<?= htmlspecialchars($submission['phone'], ENT_QUOTES) ?>"
+                                        data-date="<?= htmlspecialchars($submission['applied_at'], ENT_QUOTES) ?>"
+                                        data-files='<?= json_encode($submission['files'], JSON_HEX_APOS | JSON_HEX_QUOT) ?>'
+                                        data-company-name="<?= htmlspecialchars($submission['company_name'], ENT_QUOTES) ?>"
+                                        data-job-title="<?= htmlspecialchars($submission['job_title'], ENT_QUOTES) ?>"
+                                        data-cover="<?= htmlspecialchars($submission['message'], ENT_QUOTES) ?>"
+                                    >View Details</button>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else: ?>
+                    <div class="company-empty-state">
+                        <svg class="company-empty-illustration" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="32" fill="#e6e6ff"/><rect x="18" y="28" width="28" height="16" rx="4" fill="#7c3aed"/><rect x="24" y="34" width="16" height="4" rx="2" fill="#fff"/></svg>
+                        No submissions found for your company.
+                    </div>
+                <?php endif; ?>
+            </div>
+        </section>
+    </main>
+</div>
+<script src="main.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.view-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      let files = [];
+      try {
+        files = JSON.parse(btn.getAttribute('data-files'));
+      } catch (err) {}
+      const sub = {
+        name: btn.getAttribute('data-name'),
+        email: btn.getAttribute('data-email'),
+        phone: btn.getAttribute('data-phone'),
+        date: btn.getAttribute('data-date'),
+        files: files,
+        job_title: btn.getAttribute('data-job-title'),
+        company_name: btn.getAttribute('data-company-name'),
+        cover: btn.getAttribute('data-cover'),
+      };
+      openSubmissionDetailsModal(sub);
+    });
+  });
+});
+</script>
+</body>
+</html>

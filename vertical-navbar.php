@@ -13,6 +13,7 @@ $is_admin = $is_logged_in && isset($user['is_admin']) && $user['is_admin'];
             <a href="/<?= $project_path ?>/submissions.php" class="footer-vlink<?php if($current_page == 'submissions.php') echo ' active'; ?>">Submissions</a>
         <?php endif; ?>
         <a href="/<?= $project_path ?>/my-submission.php" class="footer-vlink<?php if($current_page == 'my-submission.php') echo ' active'; ?>">My Submission</a>
+        <a href="/<?= $project_path ?>/my-company-submissions.php" class="footer-vlink<?php if($current_page == 'my-company-submissions.php') echo ' active'; ?>">My Company Submissions</a>
         <a href="/<?= $project_path ?>/create-job.php" class="footer-vlink<?php if($current_page == 'create-job.php') echo ' active'; ?>">Create-Edit Job</a>
         <?php if($is_logged_in && $is_admin): ?>
             <a href="/<?= $project_path ?>/category-dashboard.php" class="footer-vlink<?php if($current_page == 'category-dashboard.php') echo ' active'; ?>">Category Dashboard</a>
