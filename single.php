@@ -108,6 +108,21 @@ if (!empty($category_ids)) {
     }
     $stmt->close();
 }
+
+// Check if user has already applied to this job
+$already_applied = false;
+$check_stmt = $connection->prepare("
+    SELECT id FROM apply_submissions 
+    WHERE job_id = ? AND user_id = ?
+");
+$check_stmt->bind_param("ii", $job_id, $user_id);
+$check_stmt->execute();
+$check_stmt->store_result();
+if ($check_stmt->num_rows > 0) {
+    $already_applied = true;
+}
+$check_stmt->close();
+
 ?>
 
 <!DOCTYPE html>
@@ -156,10 +171,17 @@ if (!empty($category_ids)) {
 								</div>
 							</div>
 
+							<?php if ($already_applied): ?>
+								<a class="apply-button disabled-message" href="javascript:void(0);">
+									You have already submitted an application for this job.
+								</a>
 
-							<a href="apply-submission.php?id=<?php echo $job['id']; ?>" class="blue-apply-button">
-   							 <?php echo 'Apply Submission'; ?>
-							</a>
+							<?php else: ?>		
+								<a href="apply-submission.php?id=<?php echo $job['id']; ?>" class="blue-apply-button">
+									Apply Submission
+								</a>
+							<?php endif; ?>
+
 
 							<?php if (!empty($job['company_site'])): ?>
 								<a href="<?= htmlspecialchars($job['company_site']) ?>" target="_blank">

@@ -2,3 +2,6 @@ node_modules/
 /vendor/
 .env
 test.php
+composer.json
+composer.lock
+register.php
