@@ -131,70 +131,183 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Create Job</title>
     <link rel="stylesheet" href="./css/master.css">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    
+    <style>
+        body { background: #f8f9fb; }
+        .job-minimal-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 1rem;
+            max-width: 420px;
+            margin: 2.5rem auto;
+            padding: 2.2rem 1.5rem 1.5rem 1.5rem;
+            box-shadow: 0 2px 8px rgba(80,0,120,0.04);
+        }
+        .job-minimal-title {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4b0082;
+            margin-bottom: 1.2rem;
+        }
+        .job-minimal-form-field {
+            margin-bottom: 1.1rem;
+        }
+        .job-minimal-form-field input,
+        .job-minimal-form-field textarea {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            background: #fff;
+            transition: border 0.15s;
+        }
+        .job-minimal-form-field input:focus,
+        .job-minimal-form-field textarea:focus {
+            border: 1.5px solid #4b0082;
+            outline: none;
+        }
+        .job-minimal-btn {
+            width: 100%;
+            padding: 0.85rem 0;
+            background: #4b0082;
+            color: #fff;
+            font-size: 1.08rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 0.7rem;
+            margin-top: 0.7rem;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .job-minimal-btn:hover {
+            background: #2d1457;
+        }
+        .popup-success {
+            background: #e7fbe7;
+            color: #15803d;
+            border-radius: 0.5rem;
+            padding: 0.7rem 1rem;
+            text-align: center;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            border: 1px solid #bbf7d0;
+        }
+        .popup-error {
+            background: #fef2f2;
+            color: #b91c1c;
+            border-radius: 0.5rem;
+            padding: 0.7rem 1rem;
+            text-align: center;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            border: 1px solid #fecaca;
+        }
+        #selected-categories {
+            margin-top: 0.5rem;
+            color: #4b0082;
+            font-weight: 500;
+            font-size: 0.98rem;
+        }
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0; top: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(60, 0, 100, 0.10);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: #fff;
+            border-radius: 0.7rem;
+            padding: 1.2rem 1.2rem 1rem 1.2rem;
+            box-shadow: 0 2px 12px rgba(80,0,120,0.07);
+            max-width: 340px;
+            margin: auto;
+            position: relative;
+            border: 1px solid #e5e7eb;
+        }
+        .close-btn {
+            position: absolute;
+            top: 0.7rem;
+            right: 0.7rem;
+            font-size: 1.5rem;
+            color: #4b0082;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .category-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin: 1rem 0 1.2rem 0;
+        }
+        .category-list label {
+            font-size: 1rem;
+            color: #2d1457;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .category-list input[type="checkbox"] {
+            margin-right: 0.5rem;
+        }
+        @media (max-width: 500px) {
+            .job-minimal-card { padding: 0.7rem 0.2rem; }
+            .modal-content { padding: 0.7rem 0.2rem; }
+        }
+    </style>
 </head>
 <body>
 <div class="site-wrapper">
     <main class="site-main">
         <section class="section-fullwidth">
-            <div class="row">
-                <div class="flex-container centered-vertically centered-horizontally">
-                    <div class="form-box box-shadow">
-                        <div class="section-heading">
-                            <h2 class="heading-title">New Job</h2>
-                        </div>
-
-                        <?php if ($error_message): ?>
-                            <div id="error-popup" class="popup-error"><?= htmlspecialchars($error_message) ?></div>
-                        <?php endif; ?>
-
-                        <?php if ($success_message): ?>
-                            <div id="success-popup" class="popup-success"><?= htmlspecialchars($success_message) ?></div>
-                        <?php endif; ?>
-
-                        <form action="create-job.php" method="POST">
-                            <div class="flex-container flex-wrap">
-                                <div class="form-field-wrapper width-large">
-                                    <input type="text" placeholder="Job title*" name="job-title" value="<?= htmlspecialchars($job_title) ?>"/>
-                                </div>
-                                <div class="form-field-wrapper width-large">
-                                    <input type="text" placeholder="Location*" name="location" value="<?= htmlspecialchars($location) ?>"/>
-                                </div>
-                                <div class="form-field-wrapper width-large">
-                                    <input type="text" placeholder="Salary (in leva)*" name="salary" value="<?= htmlspecialchars($salary) ?>"/>
-                                </div>
-                                <div class="form-field-wrapper width-large">
-                                    <textarea placeholder="Description" name="description"><?= htmlspecialchars($description) ?></textarea>
-                                </div>
-
-                                <!-- Hidden category selections -->
-                                <input type="hidden" id="category-input" name="category[]" multiple />
-
-                                <div class="form-field-wrapper width-large">
-                                    <button type="button" onclick="openModal()" class="button">Select Categories</button>
-                                    <div id="selected-categories" style="margin-top: 10px; color: #555;"></div>
-                                </div>
-                            </div>
-                            <button type="submit" class="button">Create</button>
-                        </form>
+            <div class="job-minimal-card">
+                <div class="job-minimal-title">New Job</div>
+                <?php if ($error_message): ?>
+                    <div id="error-popup" class="popup-error"><?= htmlspecialchars($error_message) ?></div>
+                <?php endif; ?>
+                <?php if ($success_message): ?>
+                    <div id="success-popup" class="popup-success"><?= htmlspecialchars($success_message) ?></div>
+                <?php endif; ?>
+                <form action="create-job.php" method="POST">
+                    <div class="job-minimal-form-field">
+                        <input type="text" placeholder="Job title*" name="job-title" value="<?= htmlspecialchars($job_title) ?>"/>
                     </div>
-                </div>
+                    <div class="job-minimal-form-field">
+                        <input type="text" placeholder="Location*" name="location" value="<?= htmlspecialchars($location) ?>"/>
+                    </div>
+                    <div class="job-minimal-form-field">
+                        <input type="text" placeholder="Salary (in leva)*" name="salary" value="<?= htmlspecialchars($salary) ?>"/>
+                    </div>
+                    <div class="job-minimal-form-field">
+                        <textarea placeholder="Description" name="description" rows="4"><?= htmlspecialchars($description) ?></textarea>
+                    </div>
+                    <input type="hidden" id="category-input" name="category[]" multiple />
+                    <button type="button" onclick="openModal()" class="job-minimal-btn" style="margin-bottom:0.5rem;">Select Categories</button>
+                    <div id="selected-categories"></div>
+                    <button type="submit" class="job-minimal-btn">Create</button>
+                </form>
             </div>
         </section>
     </main>
 </div>
-
 <!-- Category Modal -->
 <div id="categoryModal" class="modal">
     <div class="modal-content">
         <span class="close-btn" onclick="closeModal()">&times;</span>
-        <h3>Select Categories</h3>
+        <h3 style="text-align:center; color:#4b0082; font-weight:700; margin-bottom:1rem;">Select Categories</h3>
         <div class="category-list">
             <?php foreach ($categories as $category): ?>
                 <label><input type="checkbox" value="<?= htmlspecialchars($category) ?>" class="category-checkbox"> <?= htmlspecialchars($category) ?></label>
             <?php endforeach; ?>
         </div>
-        <button onclick="saveCategories()" class="button">Save Selection</button>
+        <button onclick="saveCategories()" class="job-minimal-btn">Save Selection</button>
     </div>
 </div>
 <script src="main.js"></script>
@@ -205,7 +318,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     const selectedDiv = document.getElementById("selected-categories");
 
     function openModal() {
-        modal.style.display = "block";
+        modal.style.display = "flex"; // Changed to flex to center content
     }
 
     function closeModal() {

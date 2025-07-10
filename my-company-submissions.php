@@ -49,15 +49,16 @@ $submissions = [];
 
 if ($user_company) {
     $stmt = $connection->prepare("
-        SELECT a.id, u.first_name, u.last_name, u.email, u.phone_number, a.message, a.cv_file_path, a.applied_at, a.company_name, a.job_title, a.status
+        SELECT a.id, u.first_name, u.last_name, u.email, u.phone_number, a.message, a.cv_file_path, a.applied_at, a.company_name, a.job_title, a.status, c.company_image, u.profile_image
         FROM apply_submissions a
         JOIN users u ON a.user_id = u.id
+        LEFT JOIN users c ON a.company_name = c.company_name
         WHERE a.company_name = ?
         ORDER BY a.applied_at DESC
     ");
     $stmt->bind_param("s", $user_company);
     $stmt->execute();
-    $stmt->bind_result($id, $fname, $lname, $email, $phone, $message, $cv, $applied_at, $company_name, $job_title, $status);
+    $stmt->bind_result($id, $fname, $lname, $email, $phone, $message, $cv, $applied_at, $company_name, $job_title, $status, $company_image, $profile_image);
     while ($stmt->fetch()) {
         $files = json_decode($cv, true) ?: [];
         $submissions[] = [
@@ -71,7 +72,9 @@ if ($user_company) {
             'applied_at' => $applied_at,
             'company_name' => $company_name,
             'job_title' => $job_title,
-            'status' => $status
+            'status' => $status,
+            'company_image' => $company_image,
+            'profile_image' => $profile_image
         ];
     }
     $stmt->close();
@@ -272,7 +275,13 @@ if ($user_company) {
                         <div class="company-card" style="<?php if ($is_accepted) echo 'background: #f3f3f3; opacity: 0.7; pointer-events: none;'; ?>">
                             <div class="company-card-accent"></div>
                             <div class="company-card-content">
-                                <div class="company-card-avatar"><?= $initials ?></div>
+                                <div class="company-card-avatar">
+                                    <?php if (!empty($submission['profile_image'])): ?>
+                                        <img src="<?= htmlspecialchars($submission['profile_image']) ?>" alt="Profile Image" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                                    <?php else: ?>
+                                        <?= $initials ?>
+                                    <?php endif; ?>
+                                </div>
                                 <div class="company-card-info">
                                     <div class="company-card-name">
                                         <?= htmlspecialchars($submission['first_name']) ?> <?= htmlspecialchars($submission['last_name']) ?>

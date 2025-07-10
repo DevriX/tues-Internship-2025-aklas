@@ -104,7 +104,7 @@ include 'vertical-navbar.php';
 
 					if ($category_filter) {
 						$stmt = $connection->prepare(
-							"SELECT jobs.*, users.company_name
+							"SELECT jobs.*, users.company_name, users.company_image
 							 FROM jobs
 							 LEFT JOIN users ON jobs.user_id = users.id
 							 JOIN job_categories jc ON jobs.id = jc.job_id
@@ -125,7 +125,7 @@ include 'vertical-navbar.php';
 						// Show all on one page, no pagination
 					} else if ($search !== '') {
 						$stmt = $connection->prepare(
-							"SELECT jobs.*, users.company_name
+							"SELECT jobs.*, users.company_name, users.company_image
 							 FROM jobs
 							 LEFT JOIN users ON jobs.user_id = users.id
 							 LEFT JOIN job_categories jc ON jobs.id = jc.job_id
@@ -153,7 +153,7 @@ include 'vertical-navbar.php';
 						$total_items_result = mysqli_query($connection, "SELECT COUNT(*) FROM jobs WHERE approved = 1");
 						$total_items = mysqli_fetch_row($total_items_result)[0];
 						$offset = ($page - 1) * $items_per_page;
-						$sql = "SELECT jobs.*, users.company_name FROM jobs LEFT JOIN users ON jobs.user_id = users.id WHERE jobs.approved = 1 ORDER BY jobs.id DESC LIMIT $items_per_page OFFSET $offset";
+						$sql = "SELECT jobs.*, users.company_name, users.company_image FROM jobs LEFT JOIN users ON jobs.user_id = users.id WHERE jobs.approved = 1 ORDER BY jobs.id DESC LIMIT $items_per_page OFFSET $offset";
 						$result = mysqli_query($connection, $sql);
 						$jobs = [];
 						while ($job = mysqli_fetch_assoc($result)) {
@@ -207,7 +207,7 @@ include 'vertical-navbar.php';
 								</div>
 								<div class="job-logo">
 									<div class="job-logo-box">
-										<img src="https://i.imgur.com/ZbILm3F.png" alt="">
+										<img src="<?= !empty($job['company_image']) ? htmlspecialchars($job['company_image']) : 'https://i.imgur.com/ZbILm3F.png' ?>" alt="Company Logo">
 									</div>
 								</div>
 							</li>

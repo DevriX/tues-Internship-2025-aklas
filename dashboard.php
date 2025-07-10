@@ -104,7 +104,10 @@ if ($category_filter) {
     $total_items_result = mysqli_query($connection, "SELECT COUNT(*) FROM jobs");
     $total_items = mysqli_fetch_row($total_items_result)[0];
     $offset = ($page - 1) * $items_per_page;
-    $jobs_result = mysqli_query($connection, "SELECT * FROM jobs LIMIT $items_per_page OFFSET $offset");
+    $jobs_result = mysqli_query(
+        $connection,
+        "SELECT jobs.*, users.company_name, users.company_image FROM jobs LEFT JOIN users ON jobs.user_id = users.id ORDER BY approved ASC, created_at DESC LIMIT $items_per_page OFFSET $offset"
+    );
     $show_pagination = true;
 }
 
@@ -228,7 +231,7 @@ if ($category_filter || $search !== '') {
             </div>
             <div class="job-logo">
                 <div class="job-logo-box">
-                    <img src="https://i.imgur.com/ZbILm3F.png" alt="">
+                    <img src="<?= !empty($job['company_image']) ? htmlspecialchars($job['company_image']) : 'https://i.imgur.com/ZbILm3F.png' ?>" alt="Company Logo">
                 </div>
             </div>
         </li>
