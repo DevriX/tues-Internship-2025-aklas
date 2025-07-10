@@ -1,4 +1,5 @@
 <?php
+include_once 'validate-location.php';
 require_once 'require_login.php';
 require 'dbconn.php';
 $user_logged_in = false;
@@ -74,6 +75,7 @@ $selected_categories = $_POST['category'] ?? [];
 $created_at = date('Y-m-d H:i:s');
 $error_message = '';
 $success_message = '';
+$result = isValidLocation($location);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($job_title == null) {
@@ -90,6 +92,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error_message = "Salary should only be made by numbers";
     } elseif (empty($selected_categories)) {
         $error_message = "Please select at least one category.";
+    } elseif($result == 0){
+        $error_message = "Please enter a valide location";
     } else {
         $stmt = $connection->prepare("INSERT INTO jobs (title, location, salary, description, user_id, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
         $stmt->bind_param("ssssi", $job_title, $location, $salary, $description, $user_id);
