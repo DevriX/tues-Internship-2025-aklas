@@ -11,7 +11,7 @@ if (isset($_COOKIE['login_token'])) {
     $token = $_COOKIE['login_token'];
     $token_hash = hash('sha256', $token);
     $stmt = $connection->prepare("
-        SELECT u.id, u.first_name, u.last_name, u.email, u.is_admin
+        SELECT u.id, u.first_name, u.last_name, u.email, u.is_admin , u.company_name
         FROM login_tokens lt
         JOIN users u ON lt.user_id = u.id
         WHERE lt.token_hash = ? AND lt.expiry > NOW()
@@ -20,10 +20,14 @@ if (isset($_COOKIE['login_token'])) {
     $stmt->execute();
     $stmt->store_result();
     if ($stmt->num_rows === 1) {
-        $stmt->bind_result($user_id, $first_name, $last_name, $email, $is_admin);
+        $stmt->bind_result($user_id, $first_name, $last_name, $email, $is_admin , $company_name);
         $stmt->fetch();
         $user_logged_in = true;
+        $is_company_name = true;
         $display_name = $first_name;
+        if( trim($company_name) === ''){
+         $is_company_name = false;
+        }
         $user = [
             'id' => $user_id,
             'first_name' => $first_name,
@@ -295,7 +299,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="hidden" id="category-input" name="category[]" multiple />
                     <button type="button" onclick="openModal()" class="job-minimal-btn" style="margin-bottom:0.5rem;">Select Categories</button>
                     <div id="selected-categories"></div>
-                    <button type="submit" class="job-minimal-btn">Create</button>
+
+                    <?php if ($is_company_name): ?>
+                        <button type="submit" class="job-minimal-btn">Create</button>
+                    <?php else: ?>
+                        <div class="popup-error">You must have a company to create a job</div>
+                        <button type="button" class="job-minimal-btn">Create</button>
+                    <?php endif; ?>
+
                 </form>
             </div>
         </section>
