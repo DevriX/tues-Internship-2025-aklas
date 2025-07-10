@@ -1,5 +1,4 @@
 <?php
-require_once 'require_login.php';
 session_start();
 require 'dbconn.php';
 

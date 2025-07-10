@@ -61,7 +61,7 @@ function sendVerificationEmail($toEmail, $token) {
         $mail->isSMTP();
         $mail->Host = 'smtp.gmail.com'; 
         $mail->SMTPAuth = true;
-        $mail->Username = 'vzlatev7@gmail.com'; 
+        $mail->Username = $_ENV['MAIL_USERNAME']; 
         $mail->Password = $_ENV['MAIL_PASSWORD'];
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = 587;
