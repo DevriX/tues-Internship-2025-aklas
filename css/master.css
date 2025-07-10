@@ -1195,6 +1195,8 @@ ul {
   position: fixed;
   right: 30px;
   top: 100px;
+  background: #7c3aed !important;
+  color: #fff !important;
 }
 
 /* --- Burger menu button styles --- */
@@ -1555,7 +1557,17 @@ ul {
     font-weight: bold;
 }
 
-.form-box {
+.footer-vlink, .footer-vlink:visited {
+  color: #7c3aed !important;
+}
+.footer-vlink.active, .footer-vlink:hover {
+  color: #5b21b6 !important;
+}
+.footer-vlink.active {
+  background: #ede9fe !important;
+}
+
+/* .form-box {
             background: #fff;
             padding: 2rem;
             border-radius: 12px;
@@ -1621,5 +1633,5 @@ ul {
 
         .button:hover {
             background-color: #0056b3;
-        }
+        } */
 
