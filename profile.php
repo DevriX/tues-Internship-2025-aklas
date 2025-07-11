@@ -56,6 +56,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $user_logged_in) {
         }
     }
 
+    // Store the old company image path before processing the new upload
+    $old_company_image = $company_image;
+
     // Handle company image upload
     if (isset($_FILES['company_image']) && $_FILES['company_image']['error'] === UPLOAD_ERR_OK) {
         $file_tmp = $_FILES['company_image']['tmp_name'];
@@ -67,7 +70,32 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $user_logged_in) {
             $upload_path = 'uploads/' . $new_filename;
             move_uploaded_file($file_tmp, $upload_path);
             $company_image = $upload_path;
+            // Delete old image if it exists, is not empty, and is not the same as the new one
+            if (!empty($old_company_image) && $old_company_image !== $company_image && file_exists($old_company_image) && strpos($old_company_image, 'uploads/') === 0) {
+                unlink($old_company_image);
+            }
         }
+    }
+
+    // After successfully uploading and moving the new company image, and before the UPDATE for the current user:
+    if (!empty($company_image) && !empty($company_name)) {
+        // Find all other users with the same company_name and a different company_image
+        $find_stmt = $connection->prepare("SELECT id, company_image FROM users WHERE company_name = ? AND company_image IS NOT NULL AND company_image != ?");
+        $find_stmt->bind_param("ss", $company_name, $company_image);
+        $find_stmt->execute();
+        $find_stmt->bind_result($other_user_id, $other_company_image);
+        while ($find_stmt->fetch()) {
+            // Delete the old image file if it exists and is in uploads/
+            if (!empty($other_company_image) && strpos($other_company_image, 'uploads/') === 0 && file_exists($other_company_image)) {
+                unlink($other_company_image);
+            }
+            // Set company_image to NULL for this user
+            $null_stmt = $connection->prepare("UPDATE users SET company_image = NULL WHERE id = ?");
+            $null_stmt->bind_param("i", $other_user_id);
+            $null_stmt->execute();
+            $null_stmt->close();
+        }
+        $find_stmt->close();
     }
 
     $update = $connection->prepare("
