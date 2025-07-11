@@ -1,8 +1,8 @@
 <?php
 require_once 'require_login.php';
 require 'dbconn.php';
-
 require_once 'config.php';
+
 $user_logged_in = false;
 $display_name = '';
 $current_page = basename($_SERVER['PHP_SELF']);
@@ -13,16 +13,10 @@ if (!isset($_SESSION['user_id']) || !isset($_COOKIE['login_token'])) {
     die('You must be logged in to apply.');
 }
 
-// Validate login token
 $token = $_COOKIE['login_token'];
 $token_hash = hash('sha256', $token);
 
-$stmt = $connection->prepare("
-    SELECT u.id, u.first_name, u.last_name, u.email, u.phone_number, u.is_admin
-    FROM login_tokens lt 
-    JOIN users u ON lt.user_id = u.id 
-    WHERE lt.token_hash = ? AND lt.expiry > NOW()
-");
+$stmt = $connection->prepare("SELECT u.id, u.first_name, u.last_name, u.email, u.phone_number, u.is_admin FROM login_tokens lt JOIN users u ON lt.user_id = u.id WHERE lt.token_hash = ? AND lt.expiry > NOW()");
 $stmt->bind_param("s", $token_hash);
 $stmt->execute();
 $stmt->store_result();
@@ -32,7 +26,6 @@ if ($stmt->num_rows === 1) {
     $stmt->fetch();
     $user_logged_in = true;
     $display_name = $first_name;
-    // Set $user for navbar
     $user = [
         'id' => $user_id,
         'first_name' => $first_name,
@@ -46,17 +39,11 @@ if ($stmt->num_rows === 1) {
 }
 $stmt->close();
 
-// Get job_id from query param
 $job_id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $job = null;
 
 if ($job_id > 0) {
-    $stmt = $connection->prepare("
-        SELECT jobs.*, users.company_name, users.company_image 
-        FROM jobs 
-        LEFT JOIN users ON jobs.user_id = users.id 
-        WHERE jobs.id = ?
-    ");
+    $stmt = $connection->prepare("SELECT jobs.*, users.company_name, users.company_image FROM jobs LEFT JOIN users ON jobs.user_id = users.id WHERE jobs.id = ?");
     $stmt->bind_param("i", $job_id);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -66,7 +53,6 @@ if ($job_id > 0) {
     $stmt->close();
 }
 
-// Optional: check if the job exists
 $stmt = $connection->prepare("SELECT id FROM jobs WHERE id = ?");
 $stmt->bind_param("i", $job_id);
 $stmt->execute();
@@ -76,30 +62,34 @@ if ($stmt->num_rows === 0) {
 }
 $stmt->close();
 
-// Check if user has already applied to this job
-$already_applied = false;
-$check_stmt = $connection->prepare("
-    SELECT id FROM apply_submissions 
-    WHERE job_id = ? AND user_id = ?
-");
+$check_stmt = $connection->prepare("SELECT id FROM apply_submissions WHERE job_id = ? AND user_id = ?");
 $check_stmt->bind_param("ii", $job_id, $user_id);
 $check_stmt->execute();
 $check_stmt->store_result();
-if ($check_stmt->num_rows > 0) {
-    $already_applied = true;
-}
+$already_applied = $check_stmt->num_rows > 0;
 $check_stmt->close();
 
-// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$already_applied) {
     $message = mysqli_real_escape_string($connection, $_POST['message']);
     $cv_file_path = null; // Default to null
-    $company_name = isset($_POST['company_name']) ? $_POST['company_name'] : null;
-    $job_title = isset($_POST['job_title']) ? $_POST['job_title'] : null;
+    $company_name = $_POST['company_name'] ?? null;
+    $job_title = $_POST['job_title'] ?? null;
 
-    // Handle file upload (server-side)
+    // ✅ Get latest 'seen' value for this user
+    $seen = 1; // Default to 1
+    $seen_query = $connection->prepare("SELECT MAX(seen) FROM apply_submissions WHERE user_id = ?");
+    $seen_query->bind_param("i", $user_id);
+    $seen_query->execute();
+    $seen_query->bind_result($max_seen);
+    $seen_query->fetch();
+    if ($max_seen !== null) {
+        $seen = $max_seen + 1;
+    }
+    $seen_query->close();
+
+    // ✅ Handle file uploads
     $uploaded_files = [];
-    if (isset($_FILES['cv_file_path']) && isset($_FILES['cv_file_path']['name']) && is_array($_FILES['cv_file_path']['name'])) {
+    if (isset($_FILES['cv_file_path']) && is_array($_FILES['cv_file_path']['name'])) {
         $allowed_exts = ['pdf', 'doc', 'docx', 'png'];
         $max_files = 5;
         $file_count = count($_FILES['cv_file_path']['name']);
@@ -111,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$already_applied) {
             if ($_FILES['cv_file_path']['error'][$i] === UPLOAD_ERR_OK) {
                 $ext = strtolower(pathinfo($_FILES['cv_file_path']['name'][$i], PATHINFO_EXTENSION));
                 if (!in_array($ext, $allowed_exts)) {
-                    echo "<p style='color: red; text-align: center;'>Invalid file type: ".htmlspecialchars($ext).". Only PDF, DOC, DOCX allowed.</p>";
+                    echo "<p style='color: red; text-align: center;'>Invalid file type: ".htmlspecialchars($ext).".</p>";
                     exit;
                 }
                 $upload_dir = __DIR__ . '/uploads/';
@@ -126,16 +116,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$already_applied) {
                 }
             }
         }
-        // Save file paths as JSON or comma-separated string
         $cv_file_path = json_encode($uploaded_files);
     }
 
-    // Insert application (now with company_name and job_title)
+    // ✅ Insert into apply_submissions with incremented seen
     $sql = "INSERT INTO apply_submissions 
-        (job_id, user_id, first_name, last_name, email, phone_number, message, cv_file_path, company_name, job_title, applied_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+        (job_id, user_id, first_name, last_name, email, phone_number, message, cv_file_path, company_name, job_title, applied_at, seen)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)";
     $stmt = $connection->prepare($sql);
-    $stmt->bind_param("iissssssss", $job_id, $user_id, $first_name, $last_name, $email, $phone_number, $message, $cv_file_path, $company_name, $job_title);
+    $stmt->bind_param(
+        "iissssssssi",
+        $job_id,
+        $user_id,
+        $first_name,
+        $last_name,
+        $email,
+        $phone_number,
+        $message,
+        $cv_file_path,
+        $company_name,
+        $job_title,
+        $seen
+    );
 
     if ($stmt->execute()) {
         $stmt->close();
@@ -147,9 +149,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$already_applied) {
     }
 }
 
+
 include 'header.php';
 include 'vertical-navbar.php';
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

@@ -34,6 +34,23 @@ if (isset($_COOKIE['login_token'])) {
     $stmt->close();
 }
 
+
+if (isset($_GET['reset_seen']) && $_GET['reset_seen'] === '1' && isset($user['id'])) {
+    $reset_stmt = $connection->prepare("
+        UPDATE apply_submissions 
+        SET seen = 0 
+        WHERE user_id = ?
+    ");
+    $reset_stmt->bind_param("i", $user['id']);
+    $reset_stmt->execute();
+    $reset_stmt->close();
+
+    // Optional: redirect to same page without query param
+    header("Location: my-submission.php");
+    exit;
+}
+
+
 include 'header.php';
 include 'vertical-navbar.php';
 
