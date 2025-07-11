@@ -41,7 +41,12 @@ $items_per_page = 5;
 $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $total_items_result = mysqli_query($connection, "SELECT COUNT(*) FROM apply_submissions");
 $total_items = mysqli_fetch_row($total_items_result)[0];
+$max_page = max(1, ceil($total_items / $items_per_page));
+$page = min($page, $max_page); // Prevent navigating to empty pages
 $offset = ($page - 1) * $items_per_page;
+
+// Remove rejected submissions from the database
+$connection->query("DELETE FROM apply_submissions WHERE status = 'rejected'");
 
 // Fetch submissions for current page
 $submissions = [];
@@ -80,8 +85,6 @@ $stmt->close();
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="./css/master.css">
 	<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-
-
 </head>
 <body>
 	<div class="site-wrapper">
@@ -116,11 +119,13 @@ $stmt->close();
 						<?php endif; ?>
 					</div>
 
-					<div class="jobs-pagination-wrapper">
-						<div class="nav-links"> 
-							<?php render_pagination($total_items, $items_per_page, $page, basename($_SERVER['PHP_SELF'])); ?>
+					<?php if ($max_page > 1): ?>
+						<div class="jobs-pagination-wrapper">
+							<div class="nav-links">
+								<?php render_pagination($total_items, $items_per_page, $page, basename($_SERVER['PHP_SELF'])); ?>
+							</div>
 						</div>
-					</div>
+					<?php endif; ?>
 				</div>
 			</section>
 		</main>
