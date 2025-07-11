@@ -123,57 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
 	<link rel="preconnect" href="https://fonts.gstatic.com">
 	<link rel="stylesheet" href="./css/master.css">
 	<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        .submission-offer-actions {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.2rem;
-            margin-top: 1.5rem;
-        }
-        .submission-offer-btn {
-            min-width: 220px;
-            padding: 0.9rem 2.2rem;
-            font-size: 1.25rem;
-            font-weight: 600;
-            border: none;
-            border-radius: 2rem;
-            cursor: pointer;
-            transition: background 0.18s, box-shadow 0.18s, transform 0.15s;
-            box-shadow: 0 2px 12px rgba(80,0,120,0.08);
-        }
-        .submission-offer-btn.accept {
-            background: linear-gradient(90deg, #34d399 0%, #059669 100%);
-            color: #fff;
-        }
-        .submission-offer-btn.accept:hover {
-            background: linear-gradient(90deg, #059669 0%, #34d399 100%);
-            transform: translateY(-2px) scale(1.04);
-        }
-        .submission-offer-btn.reject {
-            background: linear-gradient(90deg, #f87171 0%, #b91c1c 100%);
-            color: #fff;
-        }
-        .submission-offer-btn.reject:hover {
-            background: linear-gradient(90deg, #b91c1c 0%, #f87171 100%);
-            transform: translateY(-2px) scale(1.04);
-        }
-        .submission-offer-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        .submission-offer-message {
-            color: #059669;
-            font-weight: 500;
-            font-size: 1.15rem;
-            margin-bottom: 1.2rem;
-        }
-        .form-box.box-shadow {
-            background: #f7f7f7;
-            border-radius: 1.5rem;
-            box-shadow: 0 4px 24px rgba(80,0,120,0.08);
-        }
-    </style>
+
 </head>
 <body>
 	<div class="site-wrapper">
@@ -254,34 +204,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
     <button id="confirm-delete-no" class="button button-secondary">Cancel</button>
   </div>
 </div>
-<script>
-let formToDelete = null;
-document.addEventListener('DOMContentLoaded', function() {
-  document.querySelectorAll('.delete-application-btn').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      formToDelete = btn.closest('form');
-      document.getElementById('confirm-delete-modal').style.display = 'flex';
-    });
-  });
-  document.getElementById('confirm-delete-yes').onclick = function() {
-    document.getElementById('confirm-delete-modal').style.display = 'none';
-    if (formToDelete) {
-      formToDelete.submit();
-      formToDelete = null;
-    }
-  };
-  document.getElementById('confirm-delete-no').onclick = function() {
-    document.getElementById('confirm-delete-modal').style.display = 'none';
-    formToDelete = null;
-  };
-  document.getElementById('confirm-delete-modal').onclick = function(e) {
-    if (e.target === this) {
-      this.style.display = 'none';
-      formToDelete = null;
-    }
-  };
-});
-</script>
+ <script>
+        let formToDelete = null;
+        document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.delete-application-btn').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            formToDelete = btn.closest('form');
+            document.getElementById('confirm-delete-modal').style.display = 'flex';
+            });
+        });
+        document.getElementById('confirm-delete-yes').onclick = function() {
+            document.getElementById('confirm-delete-modal').style.display = 'none';
+            if (formToDelete) {
+            formToDelete.submit();
+            formToDelete = null;
+            }
+        };
+        document.getElementById('confirm-delete-no').onclick = function() {
+            document.getElementById('confirm-delete-modal').style.display = 'none';
+            formToDelete = null;
+        };
+        document.getElementById('confirm-delete-modal').onclick = function(e) {
+            if (e.target === this) {
+            this.style.display = 'none';
+            formToDelete = null;
+            }
+        };
+        });
+ </script>
 </body>
 </html>

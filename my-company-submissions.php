@@ -44,35 +44,43 @@ include 'header.php';
 include_once 'vertical-navbar.php';
 include 'submission-details-popup.php';
 
-$user_company = $user['company_name'] ?? '';
+$user_company = isset($user['company_name']) ? trim(strtolower($user['company_name'])) : '';
 $submissions = [];
+$unique_check = [];
 
 if ($user_company) {
     $stmt = $connection->prepare("
-        SELECT a.id, u.first_name, u.last_name, u.email, u.phone_number, a.message, a.cv_file_path, a.applied_at, a.company_name, a.job_title, a.status
+        SELECT a.id, a.user_id, a.job_id, u.first_name, u.last_name, u.email, u.phone_number, a.message, a.cv_file_path, a.applied_at, a.company_name, a.job_title, a.status, c.company_image, u.profile_image
         FROM apply_submissions a
         JOIN users u ON a.user_id = u.id
-        WHERE a.company_name = ?
+        LEFT JOIN users c ON a.company_name = c.company_name
+        WHERE LOWER(TRIM(a.company_name)) = ?
         ORDER BY a.applied_at DESC
     ");
     $stmt->bind_param("s", $user_company);
     $stmt->execute();
-    $stmt->bind_result($id, $fname, $lname, $email, $phone, $message, $cv, $applied_at, $company_name, $job_title, $status);
+    $stmt->bind_result($id, $user_id, $job_id, $fname, $lname, $email, $phone, $message, $cv, $applied_at, $company_name, $job_title, $status, $company_image, $profile_image);
     while ($stmt->fetch()) {
         $files = json_decode($cv, true) ?: [];
-        $submissions[] = [
-            'id' => $id,
-            'first_name' => $fname,
-            'last_name' => $lname,
-            'email' => $email,
-            'phone' => $phone,
-            'message' => $message,
-            'files' => $files,
-            'applied_at' => $applied_at,
-            'company_name' => $company_name,
-            'job_title' => $job_title,
-            'status' => $status
-        ];
+        $unique_key = $user_id . '_' . $job_id;
+        if (!isset($unique_check[$unique_key])) {
+            $submissions[] = [
+                'id' => $id,
+                'first_name' => $fname,
+                'last_name' => $lname,
+                'email' => $email,
+                'phone' => $phone,
+                'message' => $message,
+                'files' => $files,
+                'applied_at' => $applied_at,
+                'company_name' => $company_name,
+                'job_title' => $job_title,
+                'status' => $status,
+                'company_image' => $company_image,
+                'profile_image' => $profile_image
+            ];
+            $unique_check[$unique_key] = true;
+        }
     }
     $stmt->close();
 }
@@ -85,170 +93,7 @@ if ($user_company) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./css/master.css">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        .company-submissions-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 2rem;
-            margin: 2rem 0;
-        }
-        .company-card {
-            background: #fff;
-            border-radius: 1.2rem;
-            box-shadow: 0 4px 24px rgba(80,0,120,0.10);
-            overflow: hidden;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.18s cubic-bezier(.4,2,.6,1), box-shadow 0.18s;
-            border: none;
-            min-height: 180px;
-        }
-        .company-card:hover {
-            transform: translateY(-6px) scale(1.025);
-            box-shadow: 0 8px 32px rgba(80,0,120,0.16);
-        }
-        .company-card-accent {
-            height: 6px;
-            width: 100%;
-            background: linear-gradient(90deg, #7c3aed 0%, #4b0082 100%);
-            margin-bottom: 1.2rem;
-        }
-        .company-card-content {
-            flex: 1 1 auto;
-            padding: 1.2rem 1.5rem 1.5rem 1.5rem;
-            display: flex;
-            flex-direction: row;
-            align-items: flex-start;
-            gap: 1.2rem;
-            position: relative;
-        }
-        .company-card-actions {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 0.7rem;
-            margin-left: auto;
-            min-width: 160px;
-            position: relative;
-            z-index: 2;
-        }
-        .company-card-avatar {
-            width: 54px;
-            height: 54px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #e0d7f7 0%, #f0e6ff 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #4b0082;
-            box-shadow: 0 2px 8px rgba(80,0,120,0.07);
-            flex-shrink: 0;
-            text-transform: uppercase;
-        }
-        .company-card-info {
-            flex: 1 1 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 0.2rem;
-        }
-        .company-card-name {
-            font-size: 1.15rem;
-            font-weight: 600;
-            color: #2d1457;
-            margin-bottom: 0.1rem;
-        }
-        .company-card-job {
-            font-size: 1rem;
-            color: #7c3aed;
-            font-weight: 500;
-        }
-        .company-card-date {
-            font-size: 0.95rem;
-            color: #888;
-            margin-top: 0.2rem;
-        }
-        .company-card .view-btn,
-        .company-card .action-btn {
-            border: none;
-            border-radius: 999px;
-            font-weight: 500;
-            font-size: 0.95rem;
-            box-shadow: 0 2px 10px rgba(80,0,120,0.09);
-            cursor: pointer;
-            transition: transform 0.18s, box-shadow 0.18s, background 0.2s;
-            min-width: 100px;
-            white-space: nowrap;
-            padding: 0.45rem 1.1rem;
-            margin: 0;
-            outline: none;
-        }
-        .company-card .view-btn {
-            background: linear-gradient(90deg, #7c3aed 0%, #4b0082 100%);
-            color: #fff;
-            margin-bottom: 0.1rem;
-        }
-        .company-card .view-btn:hover {
-            background: linear-gradient(90deg, #4b0082 0%, #7c3aed 100%);
-            transform: translateY(-2px) scale(1.04);
-            box-shadow: 0 4px 18px rgba(80,0,120,0.16);
-        }
-        .company-card .accept-btn {
-            background: linear-gradient(90deg, #34d399 0%, #059669 100%);
-            color: #fff;
-        }
-        .company-card .accept-btn:hover {
-            background: linear-gradient(90deg, #059669 0%, #34d399 100%);
-            transform: translateY(-2px) scale(1.04);
-            box-shadow: 0 4px 18px rgba(52,211,153,0.18);
-        }
-        .company-card .reject-btn {
-            background: linear-gradient(90deg, #f87171 0%, #b91c1c 100%);
-            color: #fff;
-        }
-        .company-card .reject-btn:hover {
-            background: linear-gradient(90deg, #b91c1c 0%, #f87171 100%);
-            transform: translateY(-2px) scale(1.04);
-            box-shadow: 0 4px 18px rgba(248,113,113,0.18);
-        }
-        .company-card .progress-btn {
-            background: linear-gradient(90deg, #fbbf24 0%, #f59e42 100%);
-            color: #fff;
-        }
-        .company-card .progress-btn:hover {
-            background: linear-gradient(90deg, #f59e42 0%, #fbbf24 100%);
-            transform: translateY(-2px) scale(1.04);
-            box-shadow: 0 4px 18px rgba(251,191,36,0.18);
-        }
-        .company-empty-state {
-            text-align: center;
-            color: #4b0082;
-            margin: 3rem 0 2rem 0;
-            font-size: 1.2rem;
-            opacity: 0.85;
-        }
-        .company-empty-illustration {
-            width: 120px;
-            height: 120px;
-            margin: 0 auto 1.2rem auto;
-            display: block;
-            opacity: 0.7;
-        }
-        @media (max-width: 600px) {
-            .company-card-content {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .company-card-actions {
-                align-items: stretch;
-                min-width: 0;
-                margin-left: 0;
-                margin-top: 1.2rem;
-            }
-        }
-    </style>
+  
 </head>
 <body>
 <div class="site-wrapper">
@@ -272,7 +117,13 @@ if ($user_company) {
                         <div class="company-card" style="<?php if ($is_accepted) echo 'background: #f3f3f3; opacity: 0.7; pointer-events: none;'; ?>">
                             <div class="company-card-accent"></div>
                             <div class="company-card-content">
-                                <div class="company-card-avatar"><?= $initials ?></div>
+                                <div class="company-card-avatar">
+                                    <?php if (!empty($submission['profile_image'])): ?>
+                                        <img src="<?= htmlspecialchars($submission['profile_image']) ?>" alt="Profile Image" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                                    <?php else: ?>
+                                        <?= $initials ?>
+                                    <?php endif; ?>
+                                </div>
                                 <div class="company-card-info">
                                     <div class="company-card-name">
                                         <?= htmlspecialchars($submission['first_name']) ?> <?= htmlspecialchars($submission['last_name']) ?>

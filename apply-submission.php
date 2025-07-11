@@ -52,7 +52,7 @@ $job = null;
 
 if ($job_id > 0) {
     $stmt = $connection->prepare("
-        SELECT jobs.*, users.company_name 
+        SELECT jobs.*, users.company_name, users.company_image 
         FROM jobs 
         LEFT JOIN users ON jobs.user_id = users.id 
         WHERE jobs.id = ?
@@ -159,114 +159,87 @@ include 'vertical-navbar.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./css/master.css">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        .center-heading {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-    </style>
 </head>
 <body>
     <div class="site-wrapper">
-        <?php include 'vertical-navbar.php'; ?>
-
         <main class="site-main">
             <section class="section-fullwidth">
-                <div class="row">    
-                    <div class="flex-container centered-vertically centered-horizontally">
-                        <div class="form-box box-shadow">
-                            <div class="section-heading center-heading">
-                                <h2 class="heading-title">Submit application for <?php echo htmlspecialchars($job['title']); ?></h2>
-                            </div>
-
-                            <form method="POST" enctype="multipart/form-data" action="">
-                                <input type="hidden" name="job_id" value="<?php echo htmlspecialchars($job_id); ?>">
-                                <input type="hidden" name="company_name" value="<?php echo htmlspecialchars($job['company_name'] ?? ''); ?>">
-                                <input type="hidden" name="job_title" value="<?php echo htmlspecialchars($job['title'] ?? ''); ?>">
-
-                                <div class="flex-container justified-horizontally flex-wrap">
-                                    <!-- Company Name (read-only) -->
-                                    <div class="form-field-wrapper width-medium">
-                                        <input type="text" value="<?php echo htmlspecialchars($job['company_name'] ?? ''); ?>" disabled />
-                                    </div>
-                                    <!-- Job Title (read-only) -->
-                                    <div class="form-field-wrapper width-medium">
-                                        <input type="text" value="<?php echo htmlspecialchars($job['title'] ?? ''); ?>" disabled />
-                                    </div>
-                                    <!-- Uneditable Inputs + Hidden Values -->
-                                    <div class="form-field-wrapper width-medium">
-                                        <input type="text" value="<?php echo htmlspecialchars($first_name); ?>" disabled />
-                                        <input type="hidden" name="first_name" value="<?php echo htmlspecialchars($first_name); ?>" />
-                                    </div>
-                                    <div class="form-field-wrapper width-medium">
-                                        <input type="text" value="<?php echo htmlspecialchars($last_name); ?>" disabled />
-                                        <input type="hidden" name="last_name" value="<?php echo htmlspecialchars($last_name); ?>" />
-                                    </div>
-                                    <div class="form-field-wrapper width-medium">
-                                        <input type="email" value="<?php echo htmlspecialchars($email); ?>" disabled />
-                                        <input type="hidden" name="email" value="<?php echo htmlspecialchars($email); ?>" />
-                                    </div>
-                                    <div class="form-field-wrapper width-medium">
-                                        <input type="text" value="<?php echo htmlspecialchars($phone_number); ?>" disabled />
-                                        <input type="hidden" name="phone_number" value="<?php echo htmlspecialchars($phone_number); ?>" />
-                                    </div>
-                                    <!-- Editable Fields -->
-                                    <div class="form-field-wrapper width-large">
-                                        <textarea name="message" placeholder="Custom Message*" required></textarea>
-                                    </div>
-                                    <div class="form-field-wrapper width-large">
-                                        <input type="file" name="cv_file_path[]" accept=".png,.pdf,.doc,.docx" multiple required />
-                                        <div class='acceptable-file-types'>Accepted file types: png, pdf, doc, docx, Max. files: 5.</div>
-                                    </div>
-                                </div>
-
-                                <?php if ($already_applied): ?>
-                                    <!-- Custom popup message -->
-                                    <div id="error-popup" class="popup-error">
-                                        You have already submitted an application for this job.
-                                    </div>
-
-                                    <!-- Disabled button (non-clickable) -->
-                                    <button class="button" type="button" disabled>Submit</button>
-                                <?php else: ?>
-                                    <!-- Submit button (form will POST) -->
-                                    <button class="button" type="submit">Submit</button>
-                                <?php endif; ?>
-
-                            </form>    
-                        </div>
+                <div class="apply-card">
+                    <div class="apply-logo">
+                        <?php if (!empty($job['company_image'])): ?>
+                            <img src="<?= htmlspecialchars($job['company_image']) ?>" alt="Company Logo">
+                        <?php else: ?>
+                            <img src="https://i.imgur.com/ZbILm3F.png" alt="Company Logo">
+                        <?php endif; ?>
                     </div>
+                    <div class="apply-title">Submit application for <?= htmlspecialchars($job['title']) ?></div>
+                    <form method="POST" enctype="multipart/form-data" action="">
+                        <input type="hidden" name="job_id" value="<?= htmlspecialchars($job_id) ?>">
+                        <input type="hidden" name="company_name" value="<?= htmlspecialchars($job['company_name'] ?? '') ?>">
+                        <input type="hidden" name="job_title" value="<?= htmlspecialchars($job['title'] ?? '') ?>">
+                        <div class="apply-form-field">
+                            <input type="text" value="<?= htmlspecialchars($job['company_name'] ?? '') ?>" disabled />
+                        </div>
+                        <div class="apply-form-field">
+                            <input type="text" value="<?= htmlspecialchars($job['title'] ?? '') ?>" disabled />
+                        </div>
+                        <div class="apply-form-field">
+                            <input type="text" value="<?= htmlspecialchars($first_name) ?>" disabled />
+                            <input type="hidden" name="first_name" value="<?= htmlspecialchars($first_name) ?>" />
+                        </div>
+                        <div class="apply-form-field">
+                            <input type="text" value="<?= htmlspecialchars($last_name) ?>" disabled />
+                            <input type="hidden" name="last_name" value="<?= htmlspecialchars($last_name) ?>" />
+                        </div>
+                        <div class="apply-form-field">
+                            <input type="email" value="<?= htmlspecialchars($email) ?>" disabled />
+                            <input type="hidden" name="email" value="<?= htmlspecialchars($email) ?>" />
+                        </div>
+                        <div class="apply-form-field">
+                            <input type="text" value="<?= htmlspecialchars($phone_number) ?>" disabled />
+                            <input type="hidden" name="phone_number" value="<?= htmlspecialchars($phone_number) ?>" />
+                        </div>
+                        <div class="apply-form-field">
+                            <textarea name="message" placeholder="Custom Message*" required rows="3"></textarea>
+                        </div>
+                        <div class="apply-form-field">
+                            <label class="apply-file-label">Upload CV/Files</label>
+                            <input type="file" name="cv_file_path[]" accept=".png,.pdf,.doc,.docx" multiple required class="apply-file-input" />
+                            <div class='apply-file-types'>Accepted file types: png, pdf, doc, docx. Max. files: 5.</div>
+                        </div>
+                        <button class="apply-btn" type="submit">Submit</button>
+                    </form>
                 </div>
-            </section>    
+            </section>
         </main>
     </div>
     <script src="main.js"></script>
     <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const fileInput = document.querySelector('input[type="file"][name="cv_file_path[]"]');
-    fileInput.addEventListener('change', function(e) {
-        const files = Array.from(fileInput.files);
-        if (files.length > 5) {
-            alert('You can upload a maximum of 5 files.');
-            fileInput.value = '';
-            return;
-        }
-        const allowed = [
-            'application/pdf',
-            'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'image/png'
-        ];
-        for (const file of files) {
-            if (!allowed.includes(file.type)) {
-                alert('Only PNG, PDF, DOC, and DOCX files are allowed.');
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.querySelector('input[type="file"][name="cv_file_path[]"]');
+        fileInput.addEventListener('change', function(e) {
+            const files = Array.from(fileInput.files);
+            if (files.length > 5) {
+                alert('You can upload a maximum of 5 files.');
                 fileInput.value = '';
                 return;
             }
-        }
+            const allowed = [
+                'application/pdf',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'image/png'
+            ];
+            for (const file of files) {
+                if (!allowed.includes(file.type)) {
+                    alert('Only PNG, PDF, DOC, and DOCX files are allowed.');
+                    fileInput.value = '';
+                    return;
+                }
+            }
+        });
     });
-});
-</script>
+    </script>
 </body>
 </html>
 

@@ -171,7 +171,7 @@ if ($search !== '') {
 										<div class="form-field-wrapper">
 											<input type="text" name="new_category_name" placeholder="Enter Category To Create..." required/>
 										</div>
-										<button class="button" type="submit">Add New</button>
+										<button class="button" type="submit" style="background:linear-gradient(90deg,#a78bfa,#7c3aed); color:#fff; font-weight:600; font-size:1.1em; box-shadow:0 2px 8px rgba(124,58,237,0.10);">Add New</button>
 									</div>
 									<?php if ($update_error): ?>
 										<div id="popup-error" class="popup-error" style="margin-top:10px; color:white; font-weight:bold;"> <?= htmlspecialchars($error) ?> </div>
@@ -194,8 +194,8 @@ while ($cat = mysqli_fetch_assoc($categories)):
 								<form method="POST" style="display:flex; align-items:center; gap:10px;">
 									<input type="hidden" name="edit_category_id" value="<?= $cat['id'] ?>" />
 									<input type="text" name="edit_category_name" value="<?= htmlspecialchars($cat['name']) ?>" required style="padding:6px 10px; border-radius:6px; border:1px solid #bbb; font-size:1.1em;" />
-									<button class="button button-inline" type="submit" style="background:#1976d2; color:#fff; border-radius:6px;">Save</button>
-									<a href="category-dashboard.php" class="button button-inline" style="background:#eee; color:#333; border-radius:6px;">Cancel</a>
+									<button class="button button-inline" type="submit" style="background:#7c3aed; color:#fff; border-radius:6px;">Save</button>
+									<a href="category-dashboard.php" class="button button-inline" style="background:#ede9fe; color:#7c3aed; border-radius:6px;">Cancel</a>
 								</form>
 								<?php else: ?>
 									<h2 class="job-title" style="margin-bottom:0;"> <?= htmlspecialchars($cat['name']) ?> </h2>

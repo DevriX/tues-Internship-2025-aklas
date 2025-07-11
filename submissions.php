@@ -41,7 +41,12 @@ $items_per_page = 5;
 $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $total_items_result = mysqli_query($connection, "SELECT COUNT(*) FROM apply_submissions");
 $total_items = mysqli_fetch_row($total_items_result)[0];
+$max_page = max(1, ceil($total_items / $items_per_page));
+$page = min($page, $max_page); // Prevent navigating to empty pages
 $offset = ($page - 1) * $items_per_page;
+
+// Remove rejected submissions from the database
+$connection->query("DELETE FROM apply_submissions WHERE status = 'rejected'");
 
 // Fetch submissions for current page
 $submissions = [];
@@ -80,72 +85,6 @@ $stmt->close();
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="./css/master.css">
 	<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-	<style>
-	.submission-form {
-		background: linear-gradient(135deg, #d0f0ff 0%, #e6f7ff 100%);
-		padding: 2rem;
-		border-radius: 1rem;
-		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-		margin: 2rem 0;
-		animation: floatIn 0.8s ease-out;
-	}
-
-	.submission-form h3 {
-		font-size: 1.8rem;
-		margin-bottom: 1rem;
-		color: #003366;
-		text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
-	}
-
-	.submission-entry {
-		background: white;
-		border-radius: 0.5rem;
-		padding: 1rem;
-		margin-bottom: 1rem;
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		transition: transform 0.3s ease, box-shadow 0.3s ease;
-		border: 1px solid #cceeff;
-	}
-
-	.submission-entry:hover {
-		transform: scale(1.02);
-		box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-	}
-
-	.submission-entry .name {
-		font-weight: bold;
-		font-size: 1.1rem;
-		color: #004080;
-	}
-
-	.submission-entry .view-btn {
-		background: #4a90e2;
-		color: white;
-		border: none;
-		padding: 0.5rem 1rem;
-		border-radius: 0.3rem;
-		cursor: pointer;
-		transition: background 0.3s ease;
-	}
-
-	.submission-entry .view-btn:hover {
-		background: #357ab7;
-	}
-
-	@keyframes floatIn {
-		from {
-			opacity: 0;
-			transform: translateY(20px);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
-	}
-</style>
-
 </head>
 <body>
 	<div class="site-wrapper">
@@ -180,11 +119,13 @@ $stmt->close();
 						<?php endif; ?>
 					</div>
 
-					<div class="jobs-pagination-wrapper">
-						<div class="nav-links"> 
-							<?php render_pagination($total_items, $items_per_page, $page, basename($_SERVER['PHP_SELF'])); ?>
+					<?php if ($max_page > 1): ?>
+						<div class="jobs-pagination-wrapper">
+							<div class="nav-links">
+								<?php render_pagination($total_items, $items_per_page, $page, basename($_SERVER['PHP_SELF'])); ?>
+							</div>
 						</div>
-					</div>
+					<?php endif; ?>
 				</div>
 			</section>
 		</main>

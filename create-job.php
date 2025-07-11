@@ -1,4 +1,5 @@
 <?php
+include_once 'validate-location.php';
 require_once 'require_login.php';
 require 'dbconn.php';
 $user_logged_in = false;
@@ -10,7 +11,7 @@ if (isset($_COOKIE['login_token'])) {
     $token = $_COOKIE['login_token'];
     $token_hash = hash('sha256', $token);
     $stmt = $connection->prepare("
-        SELECT u.id, u.first_name, u.last_name, u.email, u.is_admin
+        SELECT u.id, u.first_name, u.last_name, u.email, u.is_admin , u.company_name
         FROM login_tokens lt
         JOIN users u ON lt.user_id = u.id
         WHERE lt.token_hash = ? AND lt.expiry > NOW()
@@ -19,10 +20,14 @@ if (isset($_COOKIE['login_token'])) {
     $stmt->execute();
     $stmt->store_result();
     if ($stmt->num_rows === 1) {
-        $stmt->bind_result($user_id, $first_name, $last_name, $email, $is_admin);
+        $stmt->bind_result($user_id, $first_name, $last_name, $email, $is_admin , $company_name);
         $stmt->fetch();
         $user_logged_in = true;
+        $is_company_name = true;
         $display_name = $first_name;
+        if( trim($company_name) === ''){
+         $is_company_name = false;
+        }
         $user = [
             'id' => $user_id,
             'first_name' => $first_name,
@@ -74,6 +79,7 @@ $selected_categories = $_POST['category'] ?? [];
 $created_at = date('Y-m-d H:i:s');
 $error_message = '';
 $success_message = '';
+$result = isValidLocation($location);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($job_title == null) {
@@ -90,6 +96,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error_message = "Salary should only be made by numbers";
     } elseif (empty($selected_categories)) {
         $error_message = "Please select at least one category.";
+    } elseif($result == 0){
+        $error_message = "Please enter a valid location";
     } else {
         $stmt = $connection->prepare("INSERT INTO jobs (title, location, salary, description, user_id, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
         $stmt->bind_param("ssssi", $job_title, $location, $salary, $description, $user_id);
@@ -131,114 +139,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Create Job</title>
     <link rel="stylesheet" href="./css/master.css">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    
+
 </head>
 <body>
 <div class="site-wrapper">
     <main class="site-main">
         <section class="section-fullwidth">
-            <div class="row">
-                <div class="flex-container centered-vertically centered-horizontally">
-                    <div class="form-box box-shadow">
-                        <div class="section-heading">
-                            <h2 class="heading-title">New Job</h2>
-                        </div>
-
-                        <?php if ($error_message): ?>
-                            <div id="error-popup" class="popup-error"><?= htmlspecialchars($error_message) ?></div>
-                        <?php endif; ?>
-
-                        <?php if ($success_message): ?>
-                            <div id="success-popup" class="popup-success"><?= htmlspecialchars($success_message) ?></div>
-                        <?php endif; ?>
-
-                        <form action="create-job.php" method="POST">
-                            <div class="flex-container flex-wrap">
-                                <div class="form-field-wrapper width-large">
-                                    <input type="text" placeholder="Job title*" name="job-title" value="<?= htmlspecialchars($job_title) ?>"/>
-                                </div>
-                                <div class="form-field-wrapper width-large">
-                                    <input type="text" placeholder="Location*" name="location" value="<?= htmlspecialchars($location) ?>"/>
-                                </div>
-                                <div class="form-field-wrapper width-large">
-                                    <input type="text" placeholder="Salary (in leva)*" name="salary" value="<?= htmlspecialchars($salary) ?>"/>
-                                </div>
-                                <div class="form-field-wrapper width-large">
-                                    <textarea placeholder="Description" name="description"><?= htmlspecialchars($description) ?></textarea>
-                                </div>
-
-                                <!-- Hidden category selections -->
-                                <input type="hidden" id="category-input" name="category[]" multiple />
-
-                                <div class="form-field-wrapper width-large">
-                                    <button type="button" onclick="openModal()" class="button">Select Categories</button>
-                                    <div id="selected-categories" style="margin-top: 10px; color: #555;"></div>
-                                </div>
-                            </div>
-                            <button type="submit" class="button">Create</button>
-                        </form>
+            <div class="job-minimal-card">
+                <div class="job-minimal-title">New Job</div>
+                <?php if ($error_message): ?>
+                    <div id="error-popup" class="popup-error"><?= htmlspecialchars($error_message) ?></div>
+                <?php endif; ?>
+                <?php if ($success_message): ?>
+                    <div id="success-popup" class="popup-success"><?= htmlspecialchars($success_message) ?></div>
+                <?php endif; ?>
+                <form action="create-job.php" method="POST">
+                    <div class="job-minimal-form-field">
+                        <input type="text" placeholder="Job title*" name="job-title" value="<?= htmlspecialchars($job_title) ?>"/>
                     </div>
-                </div>
+                    <div class="job-minimal-form-field">
+                        <input type="text" placeholder="Location*" name="location" value="<?= htmlspecialchars($location) ?>"/>
+                    </div>
+                    <div class="job-minimal-form-field">
+                        <input type="text" placeholder="Salary (in leva)*" name="salary" value="<?= htmlspecialchars($salary) ?>"/>
+                    </div>
+                    <div class="job-minimal-form-field">
+                        <textarea placeholder="Description" name="description" rows="4"><?= htmlspecialchars($description) ?></textarea>
+                    </div>
+                    <input type="hidden" id="category-input" name="category[]" multiple />
+                    <button type="button" onclick="openModal()" class="job-minimal-btn" style="margin-bottom:0.5rem;">Select Categories</button>
+                    <div id="selected-categories"></div>
+
+                    <?php if ($is_company_name): ?>
+                        <button type="submit" class="job-minimal-btn">Create</button>
+                    <?php else: ?>
+                        <div class="popup-error">You must have a company to create a job</div>
+                        <button type="button" class="job-minimal-btn">Create</button>
+                    <?php endif; ?>
+
+                </form>
             </div>
         </section>
     </main>
 </div>
-
 <!-- Category Modal -->
 <div id="categoryModal" class="modal">
     <div class="modal-content">
         <span class="close-btn" onclick="closeModal()">&times;</span>
-        <h3>Select Categories</h3>
+        <h3 style="text-align:center; color:#4b0082; font-weight:700; margin-bottom:1rem;">Select Categories</h3>
         <div class="category-list">
             <?php foreach ($categories as $category): ?>
                 <label><input type="checkbox" value="<?= htmlspecialchars($category) ?>" class="category-checkbox"> <?= htmlspecialchars($category) ?></label>
             <?php endforeach; ?>
         </div>
-        <button onclick="saveCategories()" class="button">Save Selection</button>
+        <button onclick="saveCategories()" class="job-minimal-btn">Save Selection</button>
     </div>
 </div>
 <script src="main.js"></script>
-
-<script>
-    const modal = document.getElementById("categoryModal");
-    const categoryInput = document.getElementById("category-input");
-    const selectedDiv = document.getElementById("selected-categories");
-
-    function openModal() {
-        modal.style.display = "block";
-    }
-
-    function closeModal() {
-        modal.style.display = "none";
-    }
-
-    function saveCategories() {
-        const checkboxes = document.querySelectorAll('.category-checkbox:checked');
-        const selected = [];
-        checkboxes.forEach(cb => selected.push(cb.value));
-
-        selectedDiv.innerHTML = "Selected: " + selected.join(', ');
-        closeModal();
-
-        // Clear and recreate hidden inputs
-        const form = document.querySelector('form');
-        document.querySelectorAll('input[name="category[]"]').forEach(e => e.remove());
-        selected.forEach(val => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'category[]';
-            input.value = val;
-            form.appendChild(input);
-        });
-    }
-
-    // Close modal on outside click
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            closeModal();
-        }
-    }
-</script>
+<script src="create-job.js"></script>
 
 </body>
 </html>

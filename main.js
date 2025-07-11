@@ -173,3 +173,33 @@ window.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+
+//my sumbision js
+let formToDelete = null;
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.delete-application-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      formToDelete = btn.closest('form');
+      document.getElementById('confirm-delete-modal').style.display = 'flex';
+    });
+  });
+  document.getElementById('confirm-delete-yes').onclick = function() {
+    document.getElementById('confirm-delete-modal').style.display = 'none';
+    if (formToDelete) {
+      formToDelete.submit();
+      formToDelete = null;
+    }
+  };
+  document.getElementById('confirm-delete-no').onclick = function() {
+    document.getElementById('confirm-delete-modal').style.display = 'none';
+    formToDelete = null;
+  };
+  document.getElementById('confirm-delete-modal').onclick = function(e) {
+    if (e.target === this) {
+      this.style.display = 'none';
+      formToDelete = null;
+    }
+  };
+});
