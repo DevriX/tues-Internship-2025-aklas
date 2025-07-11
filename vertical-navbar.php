@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+include_once 'auth-user.php';
 // Make sure $user and $current_page are set before including this file
 $is_logged_in = isset($user) && $user;
 $is_admin = $is_logged_in && isset($user['is_admin']) && $user['is_admin'];
@@ -21,11 +22,30 @@ if (isset($_COOKIE['login_token'])) {
         $stmt->fetch();
         $is_company_role = false;
         $allowed_roles = ['HR', 'CEO', 'Manager'];
-        if (in_array(trim($company_role ?? ''), $allowed_roles, true)) {
+        if (in_array(trim($company_role), $allowed_roles, true)) {
             $is_company_role = true;
         }
     }
     $stmt->close();
+}
+
+// Unseen company submissions counter logic should always run if user is company role
+$unseen_count = 0;
+if ($is_company_role && isset($user['id']) && !empty($user['company_name'])) {
+    $user_company = trim(strtolower($user['company_name']));
+    $seen_stmt = $connection->prepare("SELECT last_seen_submission_id FROM company_submission_seen WHERE user_id = ? AND company_name = ?");
+    $seen_stmt->bind_param("is", $user['id'], $user_company);
+    $seen_stmt->execute();
+    $seen_stmt->bind_result($last_seen_id);
+    $seen_stmt->fetch();
+    $seen_stmt->close();
+    // Count unseen submissions for this company
+    $count_stmt = $connection->prepare("SELECT COUNT(*) FROM apply_submissions WHERE LOWER(TRIM(company_name)) = ? AND id > ?");
+    $count_stmt->bind_param("si", $user_company, $last_seen_id);
+    $count_stmt->execute();
+    $count_stmt->bind_result($unseen_count);
+    $count_stmt->fetch();
+    $count_stmt->close();
 }
 
 ?>
@@ -40,7 +60,14 @@ if (isset($_COOKIE['login_token'])) {
         <a href="/<?= $project_path ?>/my-submission.php" class="footer-vlink<?php if($current_page == 'my-submission.php') echo ' active'; ?>">My Submission</a>
         
         <?php if ( $is_company_role ): ?>
-        <a href="/<?= $project_path ?>/my-company-submissions.php" class="footer-vlink<?php if($current_page == 'my-company-submissions.php') echo ' active'; ?>">My Company Submissions</a>
+        <a href="/<?= $project_path ?>/my-company-submissions.php" class="footer-vlink<?php if($current_page == 'my-company-submissions.php') echo ' active'; ?>">
+            My Company Submissions
+        <?php if ($unseen_count > 0): ?>
+            <span style="background:#7c3aed;color:#fff;border-radius:1em;padding:0.1em 0.7em;font-size:1em;margin-left:0.5em;vertical-align:middle;display:inline-block;min-width:1.7em;text-align:center;">
+                <?= $unseen_count ?>
+            </span>
+        <?php endif; ?>
+        </a>
         <?php endif; ?>
 
         <a href="/<?= $project_path ?>/create-job.php" class="footer-vlink<?php if($current_page == 'create-job.php') echo ' active'; ?>">Create-Edit Job</a>

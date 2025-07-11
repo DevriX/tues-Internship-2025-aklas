@@ -48,6 +48,19 @@ $user_company = isset($user['company_name']) ? trim(strtolower($user['company_na
 $submissions = [];
 $unique_check = [];
 
+$unseen_count = 0;
+$last_seen_id = 0;
+if ($user_company && $user_logged_in) {
+    // Fetch last seen submission id for this user/company
+    $seen_stmt = $connection->prepare("SELECT last_seen_submission_id FROM company_submission_seen WHERE user_id = ? AND company_name = ?");
+    $seen_stmt->bind_param("is", $user['id'], $user_company);
+    $seen_stmt->execute();
+    $seen_stmt->bind_result($last_seen_id);
+    $seen_stmt->fetch();
+    $seen_stmt->close();
+}
+
+$latest_submission_id = 0;
 if ($user_company) {
     $stmt = $connection->prepare("
         SELECT a.id, a.user_id, a.job_id, u.first_name, u.last_name, u.email, u.phone_number, a.message, a.cv_file_path, a.applied_at, a.company_name, a.job_title, a.status, c.company_image, u.profile_image
@@ -80,9 +93,23 @@ if ($user_company) {
                 'profile_image' => $profile_image
             ];
             $unique_check[$unique_key] = true;
+            // Count unseen submissions
+            if ($id > $last_seen_id) {
+                $unseen_count++;
+            }
+            if ($id > $latest_submission_id) {
+                $latest_submission_id = $id;
+            }
         }
     }
     $stmt->close();
+    // After rendering, update last seen to latest
+    if ($latest_submission_id > 0 && $user_logged_in) {
+        $up_stmt = $connection->prepare("REPLACE INTO company_submission_seen (user_id, company_name, last_seen_submission_id, last_seen_at) VALUES (?, ?, ?, NOW())");
+        $up_stmt->bind_param("isi", $user['id'], $user_company, $latest_submission_id);
+        $up_stmt->execute();
+        $up_stmt->close();
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -100,7 +127,14 @@ if ($user_company) {
     <main class="site-main">
         <section class="section-fullwidth">
             <div class="row">
-                <h3 style="text-align: center; font-weight: 700; font-size: 2.1rem; color: #4b0082; margin-bottom: 2.2rem;">My Company Submissions</h3>
+                <h3 style="text-align: center; font-weight: 700; font-size: 2.1rem; color: #4b0082; margin-bottom: 2.2rem;">
+                    My Company Submissions
+                    <?php if ($unseen_count > 0): ?>
+                        <span style="color: #fff; background: #7c3aed; border-radius: 1em; padding: 0.2em 0.8em; font-size: 1.1rem; margin-left: 0.5em; vertical-align: middle;">
+                            <?= $unseen_count ?> new
+                        </span>
+                    <?php endif; ?>
+                </h3>
                 <?php if (!$user_company): ?>
                     <div class="company-empty-state">
                         <svg class="company-empty-illustration" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="32" fill="#e6e6ff"/><rect x="18" y="28" width="28" height="16" rx="4" fill="#7c3aed"/><rect x="24" y="34" width="16" height="4" rx="2" fill="#fff"/></svg>
