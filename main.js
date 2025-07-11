@@ -105,30 +105,53 @@ document.addEventListener('DOMContentLoaded', function() {
     // -------------------------------
     // CATEGORY TAGS: show more/less toggle logic
     // -------------------------------
-    const categoryList = document.getElementById('category-tags-list');
-    const showMoreBtn = document.getElementById('show-more-categories');
-    const showMoreLi = categoryList ? categoryList.querySelector('.show-more-li') : null;
-    if (!categoryList || !showMoreBtn || !showMoreLi) return;
+    const tagsList = document.getElementById('category-tags-list');
+    if (!tagsList) return;
 
-    const hiddenItems = categoryList.querySelectorAll('.hidden-category');
+    // Category selection logic
+    tagsList.addEventListener('click', function(e) {
+        // Only handle clicks on category tags, not the show more/less button
+        if (e.target.classList.contains('list-item-link') && !e.target.closest('.show-more-li')) {
+            e.preventDefault();
+            const cat = e.target.getAttribute('data-category');
+            const url = new URL(window.location);
+            let categories = url.searchParams.getAll('categories[]');
+            if (categories.includes(cat)) {
+                categories = categories.filter(c => c !== cat);
+            } else {
+                categories.push(cat);
+            }
+            url.searchParams.delete('categories[]');
+            categories.forEach(c => url.searchParams.append('categories[]', c));
+            window.location = url.toString();
+        }
+    });
+
+    // Show more/less logic
+    const showMoreBtn = document.getElementById('show-more-categories');
+    const showMoreLi = tagsList.querySelector('.show-more-li');
+    const hiddenItems = tagsList.querySelectorAll('.hidden-category');
 
     function updateCategories() {
+        if (!showMoreLi || !showMoreBtn) return;
         if (hiddenItems.length === 0) {
             showMoreLi.style.display = 'none';
             return;
         }
         showMoreLi.style.display = 'inline-block';
-        showMoreBtn.textContent = categoryList.classList.contains('expanded') ? '−' : '+';
+        showMoreBtn.textContent = tagsList.classList.contains('expanded') ? '−' : '+';
     }
 
-    showMoreBtn.addEventListener('click', function () {
-        categoryList.classList.toggle('expanded');
+    if (showMoreBtn && showMoreLi) {
+        showMoreBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            tagsList.classList.toggle('expanded');
+            updateCategories();
+        });
+        // Initial state
+        tagsList.classList.remove('expanded');
         updateCategories();
-    });
-
-    // Initial state
-    categoryList.classList.remove('expanded');
-    updateCategories();
+    }
 
     // Auto-submit search form if input is cleared (becomes empty)
     document.querySelectorAll('.search-form-input').forEach(function(input) {

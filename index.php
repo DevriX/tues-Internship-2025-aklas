@@ -60,14 +60,38 @@ include 'vertical-navbar.php';
 				<ul class="tags-list" id="category-tags-list">
 					<?php
 					$cat_result = mysqli_query($connection, 'SELECT * FROM categories ORDER BY name ASC');
-					$active_category = isset($_GET['category']) ? $_GET['category'] : '';
-					$cat_index = 0;
+					$selected_categories = isset($_GET['categories']) ? (array)$_GET['categories'] : [];
+					$categories = [];
 					while ($cat = mysqli_fetch_assoc($cat_result)) {
-						$cat_name = htmlspecialchars($cat['name']);
-						$is_active = ($active_category === $cat['name']);
-						$hidden_class = $cat_index >= 10 ? ' hidden-category' : '';
-						echo '<li class="list-item' . $hidden_class . '"><a href="?category=' . urlencode($cat['name']) . '" class="list-item-link' . ($is_active ? ' active' : '') . '">' . $cat_name . '</a></li>';
-						$cat_index++;
+						$categories[] = $cat;
+					}
+
+					// Separate selected and unselected
+					$selected = [];
+					$unselected = [];
+					foreach ($categories as $cat) {
+						if (in_array($cat['name'], $selected_categories)) {
+							$selected[] = $cat;
+						} else {
+							$unselected[] = $cat;
+						}
+					}
+
+					// Render selected categories first (always visible)
+					foreach ($selected as $cat) {
+						echo '<li class="list-item selected-category"><a href="#" data-category="' . htmlspecialchars($cat['name']) . '" class="list-item-link active">' . htmlspecialchars($cat['name']) . '</a></li>';
+					}
+
+					// Render up to 10 unselected categories
+					$max_visible = 10;
+					foreach ($unselected as $i => $cat) {
+						$hidden_class = $i >= $max_visible ? ' hidden-category' : '';
+						echo '<li class="list-item' . $hidden_class . '"><a href="#" data-category="' . htmlspecialchars($cat['name']) . '" class="list-item-link">' . htmlspecialchars($cat['name']) . '</a></li>';
+					}
+
+					// Show More/Less button if there are more than 10 unselected categories
+					if (count($unselected) > $max_visible) {
+						echo '<li class="list-item show-more-li"><button id="show-more-categories" class="list-item-link">+</button></li>';
 					}
 					?>
 					<li class="list-item show-more-li" style="display: none;">
@@ -102,17 +126,23 @@ include 'vertical-navbar.php';
 					$category_filter = isset($_GET['category']) ? $_GET['category'] : '';
 					$show_pagination = true;
 
-					if ($category_filter) {
-						$stmt = $connection->prepare(
-							"SELECT jobs.*, users.company_name, users.company_image
-							 FROM jobs
-							 LEFT JOIN users ON jobs.user_id = users.id
-							 JOIN job_categories jc ON jobs.id = jc.job_id
-							 JOIN categories c ON jc.category_id = c.id
-							 WHERE jobs.approved = 1 AND LOWER(c.name) = LOWER(?)
-							 ORDER BY jobs.id DESC"
-						);
-						$stmt->bind_param('s', $category_filter);
+					if (!empty($selected_categories)) {
+						$placeholders = implode(',', array_fill(0, count($selected_categories), '?'));
+						$types = str_repeat('s', count($selected_categories));
+						$sql = "
+							SELECT jobs.*, users.company_name, users.company_image
+							FROM jobs
+							LEFT JOIN users ON jobs.user_id = users.id
+							JOIN job_categories jc ON jobs.id = jc.job_id
+							JOIN categories c ON jc.category_id = c.id
+							WHERE jobs.approved = 1 AND c.name IN ($placeholders)
+							GROUP BY jobs.id
+							HAVING COUNT(DISTINCT c.name) = ?
+							ORDER BY jobs.id DESC
+						";
+						$stmt = $connection->prepare($sql);
+						$bind_params = array_merge($selected_categories, [count($selected_categories)]);
+						$stmt->bind_param($types . 'i', ...$bind_params);
 						$stmt->execute();
 						$result = $stmt->get_result();
 						$jobs = [];
@@ -122,7 +152,6 @@ include 'vertical-navbar.php';
 						$total_items = count($jobs);
 						$stmt->close();
 						$show_pagination = false;
-						// Show all on one page, no pagination
 					} else if ($search !== '') {
 						$stmt = $connection->prepare(
 							"SELECT jobs.*, users.company_name, users.company_image
