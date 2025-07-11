@@ -196,6 +196,22 @@ include 'vertical-navbar.php';
 							if(empty($job['title']) || empty($job['location'])){
 								continue;
 							}
+							// Fetch company image for the company name (not just the job poster)
+							$company_logo_src = '';
+							$company_name = $job['company_name'] ?? '';
+							if (!empty($company_name)) {
+								$logo_stmt = $connection->prepare("SELECT company_image FROM users WHERE company_name = ? AND company_image IS NOT NULL AND company_image != '' LIMIT 1");
+								$logo_stmt->bind_param('s', $company_name);
+								$logo_stmt->execute();
+								$logo_stmt->bind_result($company_image);
+								if ($logo_stmt->fetch() && !empty($company_image)) {
+									$company_logo_src = '/tues-Internship-2025-aklas/' . ltrim($company_image, '/');
+								}
+								$logo_stmt->close();
+							}
+							if (empty($company_logo_src)) {
+								$company_logo_src = 'https://i.imgur.com/ZbILm3F.png';
+							}
 						?>
 							<li class="job-card">
 								<div class="job-primary">
@@ -236,8 +252,8 @@ include 'vertical-navbar.php';
 								</div>
 								<div class="job-logo">
 									<div class="job-logo-box">
-										<img src="<?= !empty($job['company_image']) ? htmlspecialchars($job['company_image']) : 'https://i.imgur.com/ZbILm3F.png' ?>" alt="Company Logo">
-									</div>
+                                        <img src="<?= htmlspecialchars($company_logo_src) ?>" alt="Company Logo">
+                                    </div>
 								</div>
 							</li>
 						<?php endforeach; ?>
