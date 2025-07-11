@@ -44,38 +44,43 @@ include 'header.php';
 include_once 'vertical-navbar.php';
 include 'submission-details-popup.php';
 
-$user_company = $user['company_name'] ?? '';
+$user_company = isset($user['company_name']) ? trim(strtolower($user['company_name'])) : '';
 $submissions = [];
+$unique_check = [];
 
 if ($user_company) {
     $stmt = $connection->prepare("
-        SELECT a.id, u.first_name, u.last_name, u.email, u.phone_number, a.message, a.cv_file_path, a.applied_at, a.company_name, a.job_title, a.status, c.company_image, u.profile_image
+        SELECT a.id, a.user_id, a.job_id, u.first_name, u.last_name, u.email, u.phone_number, a.message, a.cv_file_path, a.applied_at, a.company_name, a.job_title, a.status, c.company_image, u.profile_image
         FROM apply_submissions a
         JOIN users u ON a.user_id = u.id
         LEFT JOIN users c ON a.company_name = c.company_name
-        WHERE a.company_name = ?
+        WHERE LOWER(TRIM(a.company_name)) = ?
         ORDER BY a.applied_at DESC
     ");
     $stmt->bind_param("s", $user_company);
     $stmt->execute();
-    $stmt->bind_result($id, $fname, $lname, $email, $phone, $message, $cv, $applied_at, $company_name, $job_title, $status, $company_image, $profile_image);
+    $stmt->bind_result($id, $user_id, $job_id, $fname, $lname, $email, $phone, $message, $cv, $applied_at, $company_name, $job_title, $status, $company_image, $profile_image);
     while ($stmt->fetch()) {
         $files = json_decode($cv, true) ?: [];
-        $submissions[] = [
-            'id' => $id,
-            'first_name' => $fname,
-            'last_name' => $lname,
-            'email' => $email,
-            'phone' => $phone,
-            'message' => $message,
-            'files' => $files,
-            'applied_at' => $applied_at,
-            'company_name' => $company_name,
-            'job_title' => $job_title,
-            'status' => $status,
-            'company_image' => $company_image,
-            'profile_image' => $profile_image
-        ];
+        $unique_key = $user_id . '_' . $job_id;
+        if (!isset($unique_check[$unique_key])) {
+            $submissions[] = [
+                'id' => $id,
+                'first_name' => $fname,
+                'last_name' => $lname,
+                'email' => $email,
+                'phone' => $phone,
+                'message' => $message,
+                'files' => $files,
+                'applied_at' => $applied_at,
+                'company_name' => $company_name,
+                'job_title' => $job_title,
+                'status' => $status,
+                'company_image' => $company_image,
+                'profile_image' => $profile_image
+            ];
+            $unique_check[$unique_key] = true;
+        }
     }
     $stmt->close();
 }
