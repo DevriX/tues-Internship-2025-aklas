@@ -157,6 +157,23 @@ $check_stmt->close();
 											<span class="job-location"><?php echo htmlspecialchars($job['location']); ?></span>
 											<span class="job-price"><?php echo htmlspecialchars($job['salary']); ?> лв</span>
 										</div>
+										<?php
+										// Fetch and display categories for the main job
+										$cat_stmt = $connection->prepare(
+											"SELECT c.name FROM job_categories jc JOIN categories c ON jc.category_id = c.id WHERE jc.job_id = ?"
+										);
+										$cat_stmt->bind_param('i', $job['id']);
+										$cat_stmt->execute();
+										$cat_result = $cat_stmt->get_result();
+										$categories = [];
+										while ($row = $cat_result->fetch_assoc()) {
+											$categories[] = $row['name'];
+										}
+										$cat_stmt->close();
+										if (!empty($categories)) {
+											echo '<div class="job-categories">' . htmlspecialchars(implode(', ', $categories)) . '</div>';
+										}
+										?>
 									</header>
 
 									<div class="job-body">
