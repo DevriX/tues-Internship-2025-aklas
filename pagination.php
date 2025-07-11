@@ -3,27 +3,31 @@ function render_pagination($total_items, $items_per_page, $current_page, $base_u
     $total_pages = (int) ceil($total_items / $items_per_page);
     if ($total_pages <= 1) return;
 
-    $separator = (strpos($base_url, '?') !== false) ? '&' : '?';
     echo '<div class="jobs-pagination-wrapper"><div class="nav-links">';
+
+    // Copy current GET parameters, excluding "page"
+    $query_params = $_GET;
+    unset($query_params[$page_param]);
 
     // Prev button
     if ($current_page > 1) {
-        $prev_url = htmlspecialchars($base_url . $separator . $page_param . '=' . ($current_page - 1));
+        $query_params[$page_param] = $current_page - 1;
+        $prev_url = htmlspecialchars($base_url . '?' . http_build_query($query_params));
         echo '<a class="page-numbers prev" href="' . $prev_url . '">«</a>';
     }
 
-    // Smart page numbers
-    $range = 1; // how many pages to show before and after current
+    $range = 1;
     $dot_left = false;
     $dot_right = false;
 
     for ($i = 1; $i <= $total_pages; $i++) {
         if (
-            $i == 1 || $i == $total_pages || // always show first and last
+            $i == 1 || $i == $total_pages ||
             ($i >= $current_page - $range && $i <= $current_page + $range)
         ) {
             $is_current = ($i == $current_page);
-            $url = htmlspecialchars($base_url . $separator . $page_param . '=' . $i);
+            $query_params[$page_param] = $i;
+            $url = htmlspecialchars($base_url . '?' . http_build_query($query_params));
             echo '<a class="page-numbers' . ($is_current ? ' current' : '') . '" href="' . $url . '">' . $i . '</a> ';
         } elseif ($i < $current_page && !$dot_left && $i > 1) {
             echo '<span class="page-dots">...</span> ';
@@ -36,7 +40,8 @@ function render_pagination($total_items, $items_per_page, $current_page, $base_u
 
     // Next button
     if ($current_page < $total_pages) {
-        $next_url = htmlspecialchars($base_url . $separator . $page_param . '=' . ($current_page + 1));
+        $query_params[$page_param] = $current_page + 1;
+        $next_url = htmlspecialchars($base_url . '?' . http_build_query($query_params));
         echo '<a class="page-numbers next" href="' . $next_url . '">»</a>';
     }
 
