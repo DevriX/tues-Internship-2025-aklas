@@ -1,6 +1,7 @@
 <?php
 require_once 'config.php';
 include_once 'auth-user.php';
+$is_company_role = false;
 // Make sure $user and $current_page are set before including this file
 $is_logged_in = isset($user) && $user;
 $is_admin = $is_logged_in && isset($user['is_admin']) && $user['is_admin'];
@@ -20,9 +21,8 @@ if (isset($_COOKIE['login_token'])) {
     if ($stmt->num_rows === 1) {
         $stmt->bind_result($user_id, $company_role);
         $stmt->fetch();
-        $is_company_role = false;
-        $allowed_roles = ['HR', 'CEO', 'Manager'];
-        if (in_array(trim($company_role), $allowed_roles, true)) {
+        $allowed_roles = ['HR', 'CEO', 'Manager', 'Owner'];
+        if ($company_role && in_array(trim($company_role), $allowed_roles, true)) {
             $is_company_role = true;
         }
     }
