@@ -48,6 +48,27 @@ if ($is_company_role && isset($user['id']) && !empty($user['company_name'])) {
     $count_stmt->close();
 }
 
+
+// here take the data from the seen field for the current user and display it on the right to  next t
+$user_seen_value = null;
+
+if ($is_logged_in && isset($user['id'])) {
+    $user_id = $user['id'];
+
+    $seen_stmt = $connection->prepare("
+        SELECT seen
+        FROM apply_submissions
+        WHERE user_id = ?
+        ORDER BY seen DESC
+        LIMIT 1
+    ");
+    $seen_stmt->bind_param("i", $user_id);
+    $seen_stmt->execute();
+    $seen_stmt->bind_result($user_seen_value);
+    $seen_stmt->fetch();
+    $seen_stmt->close();
+}
+
 ?>
 <div id="vertical-navbar" class="vertical-navbar side-vertical-navbar">
     <!-- <button id="close-vertical-navbar" class="close-navbar-btn" aria-label="Close menu" style="position:absolute;top:10px;right:10px;font-size:2rem;background:none;border:none;cursor:pointer;z-index:2100;">&times;</button> -->
@@ -57,8 +78,18 @@ if ($is_company_role && isset($user['id']) && !empty($user['company_name'])) {
             <a href="/<?= $project_path ?>/dashboard.php" class="footer-vlink<?php if($current_page == 'dashboard.php') echo ' active'; ?>">Jobs Dashboard</a>
             <a href="/<?= $project_path ?>/submissions.php" class="footer-vlink<?php if($current_page == 'submissions.php') echo ' active'; ?>">Submissions</a>
         <?php endif; ?>
-        <a href="/<?= $project_path ?>/my-submission.php" class="footer-vlink<?php if($current_page == 'my-submission.php') echo ' active'; ?>">My Submission</a>
-        
+
+
+       <a href="/<?= $project_path ?>/my-submission.php?reset_seen=1" class="footer-vlink<?php if($current_page == 'my-submission.php') echo ' active'; ?>">
+            My Submission
+            <?php if (!is_null($user_seen_value) && $user_seen_value > 0): ?>
+                <span style="background:#7c3aed;color:#fff;border-radius:1em;padding:0.2em 0.6em;font-size:0.9em;margin-left:0.5em;">
+                    <?= htmlspecialchars($user_seen_value) ?>
+                </span>
+            <?php endif; ?>
+
+        </a>
+
         <?php if ( $is_company_role ): ?>
         <a href="/<?= $project_path ?>/my-company-submissions.php" class="footer-vlink<?php if($current_page == 'my-company-submissions.php') echo ' active'; ?>">
             My Company Submissions
