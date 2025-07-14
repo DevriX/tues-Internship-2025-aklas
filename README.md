@@ -45,6 +45,21 @@ This project is a web-based job management platform for students, workers, compa
 
 ---
 
+## Validation & Security
+
+### Location Validation
+- The platform validates job locations using the Google Maps Geocoding API (see `validate-location.php`).
+- When a user enters a location (e.g., when creating a job), the backend checks if the location is valid by querying the Google Maps API.
+- If the location is not recognized, the user is prompted to enter a valid location.
+
+### Route Validation & Access Control
+- The platform uses route validation to restrict access to certain pages:
+  - `require_login.php` ensures that only logged-in users can access protected routes.
+  - `require_admin.php` ensures that only admin users can access admin-only routes (like the dashboard).
+- Unauthorized users are redirected to the login page or shown an error message.
+
+---
+
 ## Technologies Used
 
 - **Backend:** PHP 6
@@ -58,7 +73,7 @@ This project is a web-based job management platform for students, workers, compa
 
 The system uses a relational MySQL database. Below is the DB diagram:
 
-![Database Schema]([db-diagram.png](https://dbdiagram.io/d/68667cbdf413ba350821dbd1)) <!-- Replace with your actual image path or upload the image to your repo -->
+![Database Schema](Screenshot-DB.png)
 
 **Main Tables:**
 - `users`: Stores user info, roles, and authentication data.
