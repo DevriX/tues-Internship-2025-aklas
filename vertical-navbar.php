@@ -21,7 +21,7 @@ if (isset($_COOKIE['login_token'])) {
     if ($stmt->num_rows === 1) {
         $stmt->bind_result($user_id, $company_role);
         $stmt->fetch();
-        $allowed_roles = ['HR', 'CEO', 'Manager', 'Owner'];
+        $allowed_roles = ['HR', 'CEO', 'Manager'];
         if ($company_role && in_array(trim($company_role), $allowed_roles, true)) {
             $is_company_role = true;
         }
