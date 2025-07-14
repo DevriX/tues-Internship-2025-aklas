@@ -106,16 +106,6 @@ include 'vertical-navbar.php';
 								<input class="search-form-input" type="text" value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>" placeholder="Search…" name="search"> 
 							</div>
 						</form>
-						<div class="filter-wrapper">
-							<div class="filter-field-wrapper">
-								<select>
-									<option value="1">Date</option>
-									<option value="2">Date</option>
-									<option value="3">Date</option>
-									<option value="4">Type</option>
-								</select>
-							</div>
-						</div>
 					</div>
 
 					<?php
@@ -264,12 +254,6 @@ include 'vertical-navbar.php';
 				</div>
 			</section>	
 		</main>
-
-		<footer class="site-footer">
-			<div class="row">
-				<p style="font-size:12px; margin-top:10px;">Copyright 2020</p>
-			</div>
-		</footer>
 	</div>
 
 

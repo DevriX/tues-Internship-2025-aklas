@@ -158,16 +158,6 @@ include 'job-details-popup.php';
 										<input class="search-form-input" type="text" value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>" placeholder="Search…" name="search"> 
 									</div>
 								</form>
-								<div class="filter-wrapper">
-									<div class="filter-field-wrapper">
-										<select>
-											<option value="1">Date</option>
-											<option value="2">Date</option>
-											<option value="3">Date</option>
-											<option value="4">Type</option>
-										</select>
-									</div>
-								</div>
 							</div>
 						</div>
 					</div>

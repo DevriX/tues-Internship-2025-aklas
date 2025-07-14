@@ -84,18 +84,27 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $user_logged_in) {
         $find_stmt->bind_param("ss", $company_name, $company_image);
         $find_stmt->execute();
         $find_stmt->bind_result($other_user_id, $other_company_image);
+
+        $users_to_update = [];
         while ($find_stmt->fetch()) {
+            $users_to_update[] = [
+                'id' => $other_user_id,
+                'company_image' => $other_company_image
+            ];
+        }
+        $find_stmt->close();
+
+        foreach ($users_to_update as $user) {
             // Delete the old image file if it exists and is in uploads/
-            if (!empty($other_company_image) && strpos($other_company_image, 'uploads/') === 0 && file_exists($other_company_image)) {
-                unlink($other_company_image);
+            if (!empty($user['company_image']) && strpos($user['company_image'], 'uploads/') === 0 && file_exists($user['company_image'])) {
+                unlink($user['company_image']);
             }
             // Set company_image to NULL for this user
             $null_stmt = $connection->prepare("UPDATE users SET company_image = NULL WHERE id = ?");
-            $null_stmt->bind_param("i", $other_user_id);
+            $null_stmt->bind_param("i", $user['id']);
             $null_stmt->execute();
             $null_stmt->close();
         }
-        $find_stmt->close();
     }
 
     $update = $connection->prepare("

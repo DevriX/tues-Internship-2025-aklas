@@ -49,7 +49,6 @@ if ($is_company_role && isset($user['id']) && !empty($user['company_name'])) {
 }
 
 
-// here take the data from the seen field for the current user and display it on the right to  next t
 $user_seen_value = null;
 
 if ($is_logged_in && isset($user['id'])) {
